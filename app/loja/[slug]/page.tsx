@@ -80,7 +80,7 @@ export default async function StoreDetailPage({ params }: Props) {
             <div className="space-y-1.5 py-1">
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{store.name}</h1>
-                {store.verified && <ShieldCheck className="w-5 h-5 text-blue-500 fill-blue-500/10" title="Loja Verificada" />}
+                {store.verified && <ShieldCheck className="w-5 h-5 text-blue-500 fill-blue-500/10" aria-label="Loja Verificada" />}
               </div>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs font-semibold text-slate-500">
                 <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-slate-400" /> {store.location}</span>
