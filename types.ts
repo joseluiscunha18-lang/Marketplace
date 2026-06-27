@@ -58,3 +58,20 @@ export interface FilterState {
   maxPrice: number;
   sortBy: 'featured' | 'price-asc' | 'price-desc' | 'newest';
 }
+
+export interface UserInfo {
+  name: string;
+  phone: string;
+  location: string;
+}
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  storeName: string;
+  price: number;
+  quantity: number;
+  date: string;
+}
