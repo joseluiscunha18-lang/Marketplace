@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { BottomNav } from '@/components/BottomNav';
+import { MarketplaceShell } from '@/components/MarketplaceShell';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://shopyump.com'),
@@ -21,16 +22,11 @@ export const metadata: Metadata = {
     locale: 'pt_MZ',
     type: 'website',
   },
-  twitter: {
-    card: 'summary_large_image',
-  },
+  twitter: { card: 'summary_large_image' },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-    },
+    googleBot: { index: true, follow: true },
   },
 };
 
@@ -41,7 +37,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CartProvider>
           <UserProvider>
             <Header />
-            <main className="flex-1 pb-16 md:pb-0">{children}</main>
+            {/*
+              MarketplaceShell detecta a rota no cliente e adiciona
+              pb-20 ao <main> apenas nas páginas do marketplace,
+              para que o conteúdo não fique tapado pela BottomNav.
+            */}
+            <MarketplaceShell>
+              {children}
+            </MarketplaceShell>
             <Footer />
             <CartDrawer />
             <BottomNav />
