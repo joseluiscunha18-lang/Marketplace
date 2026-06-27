@@ -15,9 +15,9 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
     <div className="flex items-center gap-1">
       {/* Estrela sólida, âmbar nítido, alinhada com o texto */}
-      <Star className="w-3.5 h-3.5 text-slate-800 fill-slate-800 shrink-0" style={{ marginTop: '-1px' }} />
-      <span className="text-[12px] font-bold text-slate-800 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[12px] text-slate-500 font-normal leading-none">({count.toLocaleString('pt-MZ')})</span>
+      <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" style={{ marginTop: '-1px' }} />
+      <span className="text-[12px] font-bold text-slate-700 leading-none">{rating.toFixed(1)}</span>
+      <span className="text-[12px] text-slate-600 font-normal leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -84,7 +84,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="px-3 pt-2.5 pb-3 flex flex-col gap-0.5">
 
         {/* Store name — mais contraste: slate-600 em vez de slate-400 */}
-        <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-widest truncate">
+        <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest truncate">
           {product.storeName}
         </span>
 
