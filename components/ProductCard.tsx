@@ -73,7 +73,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           className={`absolute top-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-sm ${
             isFav
               ? 'bg-red-500 text-white'
-              : 'bg-white/70 backdrop-blur-sm text-slate-500 hover:text-red-500'
+              : 'bg-white/70 backdrop-blur-sm text-slate-400 hover:text-red-500'
           }`}
         >
           <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-white' : ''}`} />
@@ -105,7 +105,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="text-[13px] font-bold text-slate-700 ml-1">MT</span>
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-[12px] text-slate-600 line-through font-normal leading-none">
+            <span className="text-[12px] text-slate-500 line-through font-normal leading-none">
               {product.originalPrice.toLocaleString('pt-MZ')} MT
             </span>
           )}
