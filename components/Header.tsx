@@ -6,10 +6,14 @@ import { usePathname } from 'next/navigation';
 import { ShoppingBag, Store, Sparkles, Menu, X, Search } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
+const MARKETPLACE_ROUTES = ['/produtos', '/lojas', '/promocoes', '/favoritos', '/conta', '/produto', '/loja'];
+
 export const Header = () => {
   const pathname = usePathname();
   const { totalItems, setIsCartOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  const isMarketplace = MARKETPLACE_ROUTES.some((r) => pathname.startsWith(r));
 
   const navLinks = [
     { label: 'Início', route: '/' },
@@ -55,9 +59,7 @@ export const Header = () => {
                 key={link.route}
                 href={link.route}
                 className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  isActive
-                    ? 'text-slate-900 bg-slate-100'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  isActive ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 {link.label}
@@ -68,10 +70,18 @@ export const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Link href="/produtos" className="md:hidden p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors" aria-label="Procurar produtos">
-            <Search className="w-5 h-5" />
-          </Link>
+          {/* Ícone de pesquisa — só nas páginas de marketplace mobile */}
+          {isMarketplace && (
+            <Link
+              href="/produtos"
+              className="md:hidden p-2 rounded-full text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Procurar produtos"
+            >
+              <Search className="w-5 h-5" />
+            </Link>
+          )}
 
+          {/* Carrinho */}
           <button
             onClick={() => setIsCartOpen(true)}
             className="relative p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 transition-all active:scale-95"
@@ -85,18 +95,21 @@ export const Header = () => {
             )}
           </button>
 
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100"
-            aria-label="Abrir Menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Menu hambúrguer — só aparece nas páginas NÃO marketplace em mobile */}
+          {!isMarketplace && (
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100"
+              aria-label="Abrir Menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Mobile Navigation Drawer */}
-      {mobileMenuOpen && (
+      {/* Mobile Navigation Drawer — só nas páginas não marketplace */}
+      {!isMarketplace && mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-6 space-y-2 shadow-xl">
           {navLinks.map((link) => (
             <Link
