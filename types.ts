@@ -41,6 +41,8 @@ export interface Product {
   colors?: ProductVariantColor[];
   inStock: boolean;
   featured?: boolean;
+  rating?: number;
+  reviewCount?: number;
   createdAt: string;
 }
 
