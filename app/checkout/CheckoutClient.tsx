@@ -5,14 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useUser } from '@/context/UserContext';
 import { MOCK_STORES } from '@/data/mockStores';
 
 export const CheckoutClient = () => {
   const router = useRouter();
   const { cart, totalPrice, clearCart } = useCart();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const { addOrderToHistory, updateUserInfo, userInfo } = useUser();
+  const [name, setName] = useState(userInfo?.name || '');
+  const [phone, setPhone] = useState(userInfo?.phone || '');
+  const [address, setAddress] = useState(userInfo?.location || '');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
 
@@ -60,9 +62,14 @@ export const CheckoutClient = () => {
     msg += `\n🔗 Link gerado via Shopyump Moz`;
 
     const url = `https://wa.me/${targetPhone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+    
+    // Save to history and update info
+    addOrderToHistory(cart, targetStoreName);
+    updateUserInfo({ name: name.trim(), phone: phone.trim(), location: address.trim() });
+    
     window.open(url, '_blank');
     clearCart();
-    router.push('/');
+    router.push('/conta');
   };
 
   return (
