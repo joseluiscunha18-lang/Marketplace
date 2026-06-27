@@ -43,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="group bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] border border-slate-100 hover:border-slate-200"
     >
       {/* Square Image — 1:1 */}
-      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-t-2xl">
+      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-2xl">
         <Image
           src={product.image}
           alt={product.name}
