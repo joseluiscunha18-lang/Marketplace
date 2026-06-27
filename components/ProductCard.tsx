@@ -15,9 +15,9 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
     <div className="flex items-center gap-1">
       {/* Estrela sólida, âmbar nítido, alinhada com o texto */}
-      <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" style={{ marginTop: '-1px' }} />
+      <Star className="w-3.5 h-3.5 text-slate-800 fill-slate-800 shrink-0" style={{ marginTop: '-1px' }} />
       <span className="text-[12px] font-bold text-slate-700 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[12px] text-slate-500 font-normal leading-none">({count.toLocaleString('pt-MZ')})</span>
+      <span className="text-[12px] text-slate-600 font-medium leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -89,7 +89,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </span>
 
         {/* Product name — dominante */}
-        <h3 className="font-bold text-[13px] text-slate-900 leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors min-h-[2.4em] mt-0.5">
+        <h3 className="font-bold text-[13px] text-black leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors min-h-[2.4em] mt-0.5">
           {product.name}
         </h3>
 
@@ -105,7 +105,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="text-[13px] font-bold text-slate-700 ml-1">MT</span>
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-[11px] text-slate-400 line-through font-normal leading-none">
+            <span className="text-[12px] text-slate-500 line-through font-normal leading-none">
               {product.originalPrice.toLocaleString('pt-MZ')} MT
             </span>
           )}
