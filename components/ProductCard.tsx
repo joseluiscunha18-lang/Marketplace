@@ -14,9 +14,10 @@ interface ProductCardProps {
 function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
     <div className="flex items-center gap-1">
-      <Star className="w-3 h-3 text-slate-500 fill-slate-500 shrink-0" />
-      <span className="text-[11px] font-semibold text-slate-500 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[11px] text-slate-400 font-normal leading-none">({count.toLocaleString('pt-MZ')})</span>
+      {/* Estrela sólida, âmbar nítido, alinhada com o texto */}
+      <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" style={{ marginTop: '-1px' }} />
+      <span className="text-[12px] font-bold text-slate-700 leading-none">{rating.toFixed(1)}</span>
+      <span className="text-[12px] text-slate-500 font-normal leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -52,15 +53,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
-        {/* Top-left badges — subtis */}
+        {/* Badges — subtis, integrados */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {discountPercent > 0 && (
-            <span className="bg-black/40 backdrop-blur-sm text-white font-semibold text-[10px] px-1.5 py-0.5 rounded-md tracking-wide">
+            <span className="bg-black/45 backdrop-blur-sm text-white font-semibold text-[10px] px-1.5 py-0.5 rounded-md tracking-wide">
               -{discountPercent}%
             </span>
           )}
           {product.featured && !discountPercent && (
-            <span className="bg-black/30 backdrop-blur-sm text-white/80 font-medium text-[9px] px-1.5 py-0.5 rounded-md tracking-wide">
+            <span className="bg-black/35 backdrop-blur-sm text-white/90 font-medium text-[9px] px-1.5 py-0.5 rounded-md tracking-wide">
               Destaque
             </span>
           )}
@@ -79,29 +80,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      {/* Content — 16px padding, alinhamento esquerda, hierarquia clara */}
-      <div className="p-4 flex flex-col gap-1">
+      {/* Content — padding reduzido p-3 para aproximar da imagem */}
+      <div className="px-3 pt-2.5 pb-3 flex flex-col gap-0.5">
 
-        {/* Store name — nível mais fraco */}
-        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest truncate">
+        {/* Store name — mais contraste: slate-600 em vez de slate-400 */}
+        <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest truncate">
           {product.storeName}
         </span>
 
-        {/* Product name — nível dominante */}
-        <h3 className="font-bold text-[13px] text-slate-900 leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors min-h-[2.4em]">
+        {/* Product name — dominante */}
+        <h3 className="font-bold text-[13px] text-slate-900 leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors min-h-[2.4em] mt-0.5">
           {product.name}
         </h3>
 
-        {/* Rating — nível secundário */}
+        {/* Rating — mais contraste, estrela âmbar nítida */}
         {product.rating && product.reviewCount ? (
           <StarRating rating={product.rating} count={product.reviewCount} />
         ) : null}
 
-        {/* Price row — preço atual à esquerda em destaque, riscado à direita menor */}
-        <div className="flex items-baseline gap-2 mt-1.5">
-          <span className="font-black text-[15px] text-slate-950 tracking-tight leading-none">
+        {/* Price — valor e MT unificados em tamanho e peso */}
+        <div className="flex items-baseline gap-2 mt-1">
+          <span className="font-black text-[16px] text-slate-950 tracking-tight leading-none">
             {product.price.toLocaleString('pt-MZ')}
-            <span className="text-[10px] font-bold text-slate-500 ml-0.5">MT</span>
+            <span className="text-[13px] font-bold text-slate-700 ml-1">MT</span>
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
             <span className="text-[11px] text-slate-400 line-through font-normal leading-none">
