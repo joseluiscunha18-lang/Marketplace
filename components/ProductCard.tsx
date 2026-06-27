@@ -3,9 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Heart, Star } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import type { Product } from '@/types';
-import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 
 interface ProductCardProps {
@@ -23,7 +22,6 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useUser();
 
   const isFav = isFavorite(product.id);
@@ -32,14 +30,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : 0;
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : undefined;
-    const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0].name : undefined;
-    addToCart(product, defaultSize, defaultColor);
-  };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,7 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       href={`/produto/${product.slug}`}
-      className="group bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] border border-slate-100 hover:border-slate-200 mx-1 my-1"
+      className="group bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] border border-slate-100 hover:border-slate-200"
     >
       {/* Square Image — 1:1 */}
       <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-t-2xl">
@@ -87,18 +77,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         >
           <Heart className={`w-4 h-4 ${isFav ? 'fill-white' : ''}`} />
         </button>
-
-        {/* Quick add — desktop only, appears on hover */}
-        <button
-          onClick={handleAddToCart}
-          className="absolute bottom-0 left-0 right-0 z-20 py-2.5 bg-slate-900/90 backdrop-blur-sm text-white text-xs font-extrabold flex items-center justify-center gap-1.5 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 md:flex hidden"
-        >
-          <ShoppingCart className="w-3.5 h-3.5" /> Adicionar ao Carrinho
-        </button>
       </div>
 
       {/* Content */}
-      <div className="p-3 flex flex-col gap-1.5">
+      <div className="p-3.5 flex flex-col gap-1.5">
         {/* Store name */}
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate">
           {product.storeName}
@@ -109,33 +91,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {product.name}
         </h3>
 
-        {/* Rating — only if exists */}
+        {/* Stars — only if rating exists */}
         {product.rating && product.reviewCount ? (
           <StarRating rating={product.rating} count={product.reviewCount} />
         ) : null}
 
-        {/* Price row */}
-        <div className="flex items-center justify-between mt-1 gap-2">
-          <div className="flex flex-col leading-none">
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-[10px] text-slate-400 line-through font-medium mb-0.5">
-                {product.originalPrice.toLocaleString('pt-MZ')} MT
-              </span>
-            )}
-            <span className="font-black text-[15px] text-slate-950 tracking-tight">
-              {product.price.toLocaleString('pt-MZ')}{' '}
-              <span className="text-[10px] font-bold text-slate-500">MT</span>
+        {/* Price */}
+        <div className="flex flex-col leading-none mt-1">
+          {product.originalPrice && product.originalPrice > product.price && (
+            <span className="text-[10px] text-slate-400 line-through font-medium mb-0.5">
+              {product.originalPrice.toLocaleString('pt-MZ')} MT
             </span>
-          </div>
-
-          {/* Add to cart — mobile only */}
-          <button
-            onClick={handleAddToCart}
-            className="md:hidden w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center active:scale-90 transition-all shadow-sm shrink-0"
-            title="Adicionar ao carrinho"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-          </button>
+          )}
+          <span className="font-black text-[15px] text-slate-950 tracking-tight">
+            {product.price.toLocaleString('pt-MZ')}{' '}
+            <span className="text-[10px] font-bold text-slate-500">MT</span>
+          </span>
         </div>
       </div>
     </Link>
