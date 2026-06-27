@@ -3,16 +3,20 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MessageSquare, MapPin, ShieldCheck, ShoppingCart, ArrowLeft, Check, Share2 } from 'lucide-react';
+import { MessageSquare, MapPin, ShieldCheck, ShoppingCart, ArrowLeft, Check, Share2, Heart } from 'lucide-react';
 import type { Product, Store } from '@/types';
 import { useCart } from '@/context/CartContext';
+import { useUser } from '@/context/UserContext';
 
 export const ProductDetailClient = ({ product, store }: { product: Product; store?: Store }) => {
   const { addToCart } = useCart();
+  const { toggleFavorite, isFavorite } = useUser();
   const [selectedImage, setSelectedImage] = useState(product.image);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
   const [copied, setCopied] = useState(false);
+
+  const isFav = isFavorite(product.id);
 
   const phone = store?.whatsapp ?? '258840000000';
   const productUrl = `https://shopyump.com/produto/${product.slug}`;
@@ -163,16 +167,27 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
-                className="py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
+                className="col-span-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
               >
                 <ShoppingCart className="w-4 h-4" /> Adicionar Saco
               </button>
               <button
+                onClick={() => toggleFavorite(product.id)}
+                className={`py-3.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                  isFav 
+                    ? 'bg-red-50 text-red-600 border border-red-100' 
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isFav ? 'fill-red-600' : ''}`} />
+                {isFav ? 'Guardado' : 'Guardar'}
+              </button>
+              <button
                 onClick={handleShare}
-                className="py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                className="py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
-                {copied ? 'Link Copiado!' : 'Partilhar'}
+                {copied ? 'Copiado!' : 'Partilhar'}
               </button>
             </div>
 
