@@ -24,6 +24,8 @@ export const MOCK_PRODUCTS: Product[] = [
     colors: [{ name: 'Branco', hex: '#ffffff' }],
     inStock: true,
     featured: true,
+    rating: 4.8,
+    reviewCount: 124,
     createdAt: '2025-02-20'
   },
   {
@@ -42,11 +44,13 @@ export const MOCK_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=800&q=80',
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80'
     ],
-    description: 'Nascido nos campos de futebol indoor dos anos 50, o clássico Samba conquistou as ruas mundiais. Cabedal em couro macio com sobreposições em camurça e sola de borracha gum retro.',
+    description: 'Nascido nos campos de futebol indoor dos anos 50, o clássico Samba conquistou as ruas mundiais.',
     sizes: ['38', '39', '40', '41', '42'],
     colors: [{ name: 'Preto/Branco', hex: '#111827' }],
     inStock: true,
     featured: true,
+    rating: 4.6,
+    reviewCount: 89,
     createdAt: '2025-02-19'
   },
   {
@@ -66,9 +70,11 @@ export const MOCK_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=800&q=80',
       'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&q=80'
     ],
-    description: 'Cancelamento Ativo de Ruído até 2x melhorado, Modo Ambiente Adaptativo e Áudio Espacial personalizado com acompanhamento dinâmico da cabeça.',
+    description: 'Cancelamento Ativo de Ruído até 2x melhorado, Modo Ambiente Adaptativo e Áudio Espacial personalizado.',
     inStock: true,
     featured: true,
+    rating: 4.9,
+    reviewCount: 203,
     createdAt: '2025-02-22'
   },
   {
@@ -87,11 +93,13 @@ export const MOCK_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80',
       'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80'
     ],
-    description: 'Quimono longo unissexo confeccionado em tecido 100% algodão de capulana moçambicana encorpada. Acabamento impecável com costura dupla. Ótimo para usar sobre vestidos, calças ou na praia.',
+    description: 'Quimono longo unissexo confeccionado em tecido 100% algodão de capulana moçambicana encorpada.',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [{ name: 'Laranja/Dourado', hex: '#ea580c' }, { name: 'Azul Turquesa', hex: '#0284c7' }],
     inStock: true,
     featured: true,
+    rating: 4.7,
+    reviewCount: 56,
     createdAt: '2025-02-15'
   },
   {
@@ -111,7 +119,7 @@ export const MOCK_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800&q=80',
       'https://images.unsplash.com/photo-1608248597359-0e6d5c9a69ef?w=800&q=80'
     ],
-    description: 'Sérum anti-envelhecimento e iluminador com 10% de vitamina C pura, ácido salicílico e neurosensine. Reduz rugas, melhora a textura e restaura o brilho natural da pele.',
+    description: 'Sérum anti-envelhecimento e iluminador com 10% de vitamina C pura, ácido salicílico e neurosensine.',
     inStock: true,
     featured: true,
     createdAt: '2025-02-14'
@@ -131,11 +139,13 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&q=80'
     ],
-    description: 'Conjunto fresco em linho misto de alta qualidade. Camisa de manga curta com gola cubana e calções com cordão ajustável na cintura. Ideal para os dias quentes de fim de semana.',
+    description: 'Conjunto fresco em linho misto de alta qualidade. Camisa de manga curta com gola cubana.',
     sizes: ['M', 'L', 'XL'],
     colors: [{ name: 'Bege Areia', hex: '#d6d3d1' }, { name: 'Verde Musgo', hex: '#365314' }],
     inStock: true,
     featured: false,
+    rating: 4.3,
+    reviewCount: 31,
     createdAt: '2025-02-10'
   },
   {
@@ -153,10 +163,12 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&q=80'
     ],
-    description: 'Candeeiro de mesa com design minimalista em metal escovado. 3 temperaturas de cor (quente, neutro e frio) controladas por toque. Bateria interna recarregável via USB com autonomia de 12 horas.',
+    description: 'Candeeiro de mesa com design minimalista em metal escovado. 3 temperaturas de cor controladas por toque.',
     colors: [{ name: 'Dourado Mate', hex: '#ca8a04' }, { name: 'Preto Carbono', hex: '#18181b' }],
     inStock: true,
     featured: true,
+    rating: 4.5,
+    reviewCount: 47,
     createdAt: '2025-02-08'
   },
   {
@@ -176,10 +188,12 @@ export const MOCK_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=800&q=80',
       'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'
     ],
-    description: 'Ecrã infinito AMOLED de 2.2 polegadas, chamadas Bluetooth, monitorização de batimentos cardíacos, pressão arterial e mais de 100 modos desportivos. Compatível com Android e iPhone.',
+    description: 'Ecrã infinito AMOLED de 2.2 polegadas, chamadas Bluetooth, monitorização de batimentos cardíacos.',
     colors: [{ name: 'Titânio Laranja', hex: '#f97316' }, { name: 'Preto Total', hex: '#0f172a' }],
     inStock: true,
     featured: true,
+    rating: 4.4,
+    reviewCount: 78,
     createdAt: '2025-02-18'
   },
   {
@@ -197,7 +211,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80'
     ],
-    description: 'Feito em material ecológico TPE reciclável. Amortecimento confortável para articulações e textura dupla face anti-escorregamento mesmo com suor intenso. Inclui alça de transporte gratuita.',
+    description: 'Feito em material ecológico TPE reciclável. Amortecimento confortável para articulações.',
     colors: [{ name: 'Roxo Lavanda', hex: '#a855f7' }, { name: 'Azul Marinho', hex: '#1e3a8a' }],
     inStock: true,
     featured: false,
@@ -219,9 +233,11 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&q=80'
     ],
-    description: 'Formato 60% ultra compacto que deixa mais espaço na mesa para movimentos do rato. Switches mecânicos azuis com clique tátil audível e 20 modos de retroiluminação RGB colorida.',
+    description: 'Formato 60% ultra compacto com switches mecânicos azuis e 20 modos de retroiluminação RGB.',
     inStock: true,
     featured: false,
+    rating: 4.6,
+    reviewCount: 62,
     createdAt: '2025-01-28'
   },
   {
@@ -239,11 +255,13 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1539185441755-769473a23570?w=800&q=80'
     ],
-    description: 'O regresso de uma lenda do basquetebol de 1989. O New Balance 550 apresenta uma silhueta limpa e clássica de cano baixo que presta homenagem aos jogadores profissionais dos anos 80.',
+    description: 'O regresso de uma lenda do basquetebol de 1989. Silhueta limpa e clássica de cano baixo.',
     sizes: ['40', '41', '42', '43'],
     colors: [{ name: 'Branco/Verde', hex: '#15803d' }],
     inStock: true,
     featured: true,
+    rating: 4.7,
+    reviewCount: 95,
     createdAt: '2025-02-21'
   },
   {
@@ -261,9 +279,11 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&q=80'
     ],
-    description: 'Bolsa redonda tecida à mão por artesãos locais. Interior totalmente forrado com capulana de cores vivas e bolso interno com fecho éclair.',
+    description: 'Bolsa redonda tecida à mão por artesãos locais. Interior forrado com capulana de cores vivas.',
     inStock: true,
     featured: false,
+    rating: 4.2,
+    reviewCount: 28,
     createdAt: '2025-01-20'
   }
 ];
