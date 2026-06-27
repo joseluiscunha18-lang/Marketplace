@@ -13,34 +13,11 @@ interface ProductCardProps {
 }
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating - fullStars >= 0.5;
-
   return (
     <div className="flex items-center gap-1">
-      <div className="flex items-center gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => {
-          const filled = i < fullStars;
-          const half = !filled && i === fullStars && hasHalf;
-          return (
-            <span key={i} className="relative inline-block w-3 h-3">
-              {/* background star (empty) */}
-              <Star className="w-3 h-3 text-slate-200 fill-slate-200 absolute inset-0" />
-              {/* filled portion */}
-              {(filled || half) && (
-                <span
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ width: half ? '55%' : '100%' }}
-                >
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                </span>
-              )}
-            </span>
-          );
-        })}
-      </div>
-      <span className="text-[10px] font-bold text-amber-500 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[10px] text-slate-400 font-medium leading-none">({count})</span>
+      <Star className="w-3 h-3 text-slate-700 fill-slate-700 shrink-0" />
+      <span className="text-[11px] font-bold text-slate-700 leading-none">{rating.toFixed(1)}</span>
+      <span className="text-[11px] text-slate-400 font-normal leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -73,10 +50,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       href={`/produto/${product.slug}`}
-      className="group bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] border border-slate-100 hover:border-slate-200"
+      className="group bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] border border-slate-100 hover:border-slate-200 mx-1 my-1"
     >
       {/* Square Image — 1:1 */}
-      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden">
+      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-t-2xl">
         <Image
           src={product.image}
           alt={product.name}
@@ -132,7 +109,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {product.name}
         </h3>
 
-        {/* Stars — only if rating exists */}
+        {/* Rating — only if exists */}
         {product.rating && product.reviewCount ? (
           <StarRating rating={product.rating} count={product.reviewCount} />
         ) : null}
