@@ -1,10 +1,20 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShieldCheck, MapPin, Package, ArrowRight, Star } from 'lucide-react';
+import { ShieldCheck, MapPin, Package, ArrowRight, Star, Heart } from 'lucide-react';
 import type { Store } from '@/types';
+import { useUser } from '@/context/UserContext';
 
 export const StoreCard: React.FC<{ store: Store }> = ({ store }) => {
+  const { toggleFavoriteStore, isFavoriteStore } = useUser();
+  const isFav = isFavoriteStore(store.id);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavoriteStore(store.id);
+  };
+
   return (
     <Link
       href={`/loja/${store.slug}`}
@@ -19,6 +29,18 @@ export const StoreCard: React.FC<{ store: Store }> = ({ store }) => {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        
+        <button
+          onClick={handleToggleFavorite}
+          className={`absolute top-3 left-3 z-20 w-8 h-8 rounded-full border flex items-center justify-center transition-all active:scale-90 ${
+            isFav 
+              ? 'bg-red-500 border-red-500 text-white shadow-md' 
+              : 'bg-white/80 backdrop-blur-md border-slate-100 text-slate-900/40 hover:text-red-500'
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isFav ? 'fill-white' : ''}`} />
+        </button>
+
         <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-xs">
           {store.category}
         </span>

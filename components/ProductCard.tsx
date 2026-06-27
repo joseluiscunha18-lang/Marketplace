@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, MapPin } from 'lucide-react';
+import { ShoppingCart, MapPin, Heart } from 'lucide-react';
 import type { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
+import { useUser } from '@/context/UserContext';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,9 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
+  const { toggleFavorite, isFavorite } = useUser();
+
+  const isFav = isFavorite(product.id);
 
   const discountPercent =
     product.originalPrice && product.originalPrice > product.price
@@ -25,6 +29,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : undefined;
     const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0].name : undefined;
     addToCart(product, defaultSize, defaultColor);
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(product.id);
   };
 
   return (
@@ -54,6 +64,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </span>
           )}
         </div>
+
+        <button
+          onClick={handleToggleFavorite}
+          className={`absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full border flex items-center justify-center transition-all active:scale-90 ${
+            isFav 
+              ? 'bg-red-500 border-red-500 text-white shadow-md' 
+              : 'bg-white/80 backdrop-blur-md border-slate-100 text-slate-400 hover:text-red-500'
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isFav ? 'fill-white' : ''}`} />
+        </button>
 
         <button
           onClick={handleAddToCart}
