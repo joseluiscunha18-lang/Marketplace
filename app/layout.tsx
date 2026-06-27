@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
-import { UserProvider } from '@/context/UserContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
-import { BottomNav } from '@/components/BottomNav';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://shopyump.com'),
@@ -39,13 +37,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt">
       <body className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-emerald-500 selection:text-white">
         <CartProvider>
-          <UserProvider>
-            <Header />
-            <main className="flex-1 pb-16 md:pb-0">{children}</main>
-            <Footer />
-            <CartDrawer />
-            <BottomNav />
-          </UserProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
         </CartProvider>
       </body>
     </html>
