@@ -207,10 +207,10 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                     <button
                       key={i}
                       onClick={() => goTo(i)}
-                      className={`rounded-full transition-all duration-300 shrink-0 ${
+                      className={`w-2 h-2 rounded-full transition-colors duration-300 shrink-0 ${
                         i === activeIndex
-                          ? 'w-2 h-2 bg-slate-900'
-                          : 'w-1.5 h-1.5 bg-slate-400 hover:bg-slate-500'
+                          ? 'bg-slate-900'
+                          : 'bg-gray-300 hover:bg-gray-400'
                       }`}
                       aria-label={`Ir para imagem ${i + 1}`}
                     />
