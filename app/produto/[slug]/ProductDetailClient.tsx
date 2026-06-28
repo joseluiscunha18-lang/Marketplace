@@ -209,8 +209,8 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                       onClick={() => goTo(i)}
                       className={`rounded-full transition-all duration-300 shrink-0 ${
                         i === activeIndex
-                          ? 'w-2.5 h-2.5 bg-slate-900'
-                          : 'w-2 h-2 bg-slate-500 hover:bg-slate-600'
+                          ? 'w-2 h-2 bg-slate-900'
+                          : 'w-1.5 h-1.5 bg-slate-400 hover:bg-slate-500'
                       }`}
                       aria-label={`Ir para imagem ${i + 1}`}
                     />
