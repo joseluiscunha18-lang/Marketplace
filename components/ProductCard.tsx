@@ -16,7 +16,7 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
     <div className="flex items-center gap-1 mt-0.5">
       <Star className="w-3.5 h-3.5 text-slate-800 fill-slate-800 shrink-0" style={{ marginTop: '-1px' }} />
       <span className="text-[12px] font-bold text-slate-800 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[12px] text-slate-500 font-semibold leading-none">({count.toLocaleString('pt-MZ')})</span>
+      <span className="text-[12px] text-slate-700 font-semibold leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -76,9 +76,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="px-2.5 pt-3 pb-3 flex flex-col flex-grow justify-between gap-1.5">
+      <div className="px-2.5 pt-2 pb-3 flex flex-col flex-grow justify-between gap-1.5">
         <div>
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-1">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-0.5">
             {product.storeName}
           </span>
 
