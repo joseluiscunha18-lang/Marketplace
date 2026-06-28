@@ -3,14 +3,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
-  MessageSquare, MapPin, ShieldCheck, ShoppingCart,
+  ShieldCheck, ShoppingCart, ShoppingBag,
   Check, Share2, Heart, ChevronLeft, ChevronRight,
-  MoreHorizontal, Star,
+  MoreHorizontal, Star, Truck, RefreshCcw, Lock,
 } from 'lucide-react';
 import type { Product, Store } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
+import { getSizeLabel } from '@/lib/productHelpers';
+import { ProductCard } from '@/components/ProductCard';
 
 /* ─── Store top-bar (replica shop.app) ──────────────────────────── */
 function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
@@ -59,7 +62,18 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
 }
 
 /* ─── Main component ─────────────────────────────────────────────── */
-export const ProductDetailClient = ({ product, store }: { product: Product; store?: Store }) => {
+export const ProductDetailClient = ({
+  product,
+  store,
+  relatedFromStore = [],
+  relatedFromOthers = [],
+}: {
+  product: Product;
+  store?: Store;
+  relatedFromStore?: Product[];
+  relatedFromOthers?: Product[];
+}) => {
+  const router = useRouter();
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useUser();
 
@@ -82,15 +96,18 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
     };
   }, []);
 
-  const phone = store?.whatsapp ?? '258840000000';
   const productUrl = `https://shopyump.com/produto/${product.slug}`;
-  const waText = `Olá ${product.storeName}! Quero comprar:\n*${product.name}*\nPreço: ${product.price.toLocaleString('pt-MZ')} MT${selectedSize ? `\nTamanho: ${selectedSize}` : ''}${selectedColor ? `\nCor: ${selectedColor}` : ''}\nLink: ${productUrl}`;
-  const directBuyUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(waText)}`;
+  const sizeLabel = getSizeLabel(product.sizes);
 
   const handleShare = () => {
     navigator.clipboard.writeText(productUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, selectedSize || undefined, selectedColor || undefined);
+    router.push('/checkout');
   };
 
   const goTo = (index: number) => {
@@ -281,14 +298,14 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                 {product.sizes && product.sizes.length > 0 && (
                   <div className="space-y-2">
                     <span className="text-xs font-black uppercase tracking-wider text-slate-800">
-                      Size <span className="font-semibold normal-case tracking-normal">{selectedSize}</span>
+                      {sizeLabel} <span className="font-semibold normal-case tracking-normal">{selectedSize}</span>
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {product.sizes.map((sz) => (
                         <button
                           key={sz}
                           onClick={() => setSelectedSize(sz)}
-                          className={`w-11 h-11 rounded-full text-xs font-extrabold border-2 transition-all ${
+                          className={`min-w-11 h-11 px-3 rounded-full text-xs font-extrabold border-2 transition-all ${
                             selectedSize === sz
                               ? 'bg-slate-900 text-white border-slate-900 shadow-md'
                               : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
@@ -303,19 +320,20 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
 
                 {product.colors && product.colors.length > 0 && (
                   <div className="space-y-2">
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-800">Cor: {selectedColor}</span>
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+                      Cor <span className="font-semibold normal-case tracking-normal">{selectedColor}</span>
+                    </span>
                     <div className="flex flex-wrap gap-2">
                       {product.colors.map((c) => (
                         <button
                           key={c.name}
                           onClick={() => setSelectedColor(c.name)}
-                          className={`px-4 py-2 rounded-xl text-xs font-bold border flex items-center gap-2 transition-all ${
+                          className={`px-4 py-2.5 rounded-full text-xs font-bold border-2 transition-all ${
                             selectedColor === c.name
-                              ? 'border-slate-900 bg-slate-100 text-slate-900'
-                              : 'border-slate-200 bg-white text-slate-600'
+                              ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
                           }`}
                         >
-                          <span className="w-3 h-3 rounded-full border border-black/10" style={{ backgroundColor: c.hex }} />
                           {c.name}
                         </button>
                       ))}
@@ -329,30 +347,56 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                 <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Descrição do Produto</span>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">{product.description}</p>
               </div>
+
+              {/* Política de entrega, devolução e garantia */}
+              <div className="pt-4 border-t border-slate-100">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 divide-y divide-slate-100 overflow-hidden">
+                  <div className="flex items-start gap-3 p-3.5">
+                    <Truck className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Entrega em {product.storeLocation}</p>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">Prazo e custo de envio combinados directamente com o lojista no checkout.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3.5">
+                    <RefreshCcw className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Trocas e devoluções</p>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">Verifique a política de trocas do vendedor antes de confirmar o pedido.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3.5">
+                    <Lock className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Pagamento seguro</p>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">Pagamento na entrega ou por M-Pesa, combinado directamente com o vendedor.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* CTA Buttons */}
             <div className="space-y-3 pt-6 border-t border-slate-100 sticky bottom-4 bg-white/95 backdrop-blur-md p-4 -mx-4 rounded-3xl shadow-2xl lg:shadow-none lg:static lg:p-0 lg:m-0">
-              <a
-                href={directBuyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full font-black text-sm sm:text-base uppercase tracking-wider shadow-xl shadow-[#25D366]/25 flex items-center justify-center gap-2.5 active:scale-[0.98] transition-all"
-              >
-                <MessageSquare className="w-5 h-5 fill-white" />
-                <span>💬 Comprar Imediato no WhatsApp</span>
-              </a>
-
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
-                  className="col-span-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
+                  className="py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                 >
-                  <ShoppingCart className="w-4 h-4" /> Adicionar Saco
+                  <ShoppingCart className="w-4 h-4" /> Adicionar ao Carrinho
                 </button>
                 <button
+                  onClick={handleBuyNow}
+                  className="py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                >
+                  <ShoppingBag className="w-4 h-4" /> Comprar Agora
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
                   onClick={() => toggleFavorite(product.id)}
-                  className={`py-3.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                  className={`py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 ${
                     isFav
                       ? 'bg-red-50 text-red-600 border border-red-100'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -363,20 +407,76 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                 </button>
                 <button
                   onClick={handleShare}
-                  className="py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
+                  className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
                 >
                   {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
                   {copied ? 'Copiado!' : 'Partilhar'}
                 </button>
               </div>
 
-              <p className="text-[10px] text-center text-slate-400">
-                🔒 Venda directa combinada de forma segura com o lojista de {product.storeLocation}.
+              <p className="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
+                <ShieldCheck className="w-3 h-3" /> Venda directa combinada de forma segura com o lojista de {product.storeLocation}.
               </p>
             </div>
           </div>
+        </div>
+
+        {/* ── Produtos relacionados ─────────────────────────────────── */}
+        <div className="px-4 lg:px-4 mt-10 space-y-10">
+          {relatedFromStore.length > 0 && (
+            <RelatedSection
+              title={`Mais de ${product.storeName}`}
+              ctaHref={`/loja/${product.storeSlug}`}
+              ctaLabel="Visitar loja"
+              products={relatedFromStore}
+            />
+          )}
+
+          {relatedFromOthers.length > 0 && (
+            <RelatedSection
+              title="Também poderá gostar de"
+              ctaHref="/produtos"
+              ctaLabel="Ver mais"
+              products={relatedFromOthers}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 };
+
+/* ─── Related products carousel/grid section ────────────────────────── */
+function RelatedSection({
+  title,
+  ctaHref,
+  ctaLabel,
+  products,
+}: {
+  title: string;
+  ctaHref: string;
+  ctaLabel: string;
+  products: Product[];
+}) {
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-3.5">
+        <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">{title}</h2>
+        <Link
+          href={ctaHref}
+          className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0 transition-colors"
+        >
+          {ctaLabel}
+          <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+      <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 sm:grid sm:grid-cols-3 lg:grid-cols-4 sm:gap-4 sm:mx-0 sm:px-0">
+        {products.map((p) => (
+          <div key={p.id} className="w-[42%] shrink-0 sm:w-auto sm:shrink">
+            <ProductCard product={p} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

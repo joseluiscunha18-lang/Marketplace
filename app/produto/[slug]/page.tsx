@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MOCK_PRODUCTS } from '@/data/mockProducts';
 import { MOCK_STORES } from '@/data/mockStores';
+import { getRelatedFromSameStore, getRelatedFromOtherStores } from '@/lib/productHelpers';
 import { ProductDetailClient } from './ProductDetailClient';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -40,6 +41,8 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) notFound();
 
   const store = MOCK_STORES.find((s) => s.id === product.storeId || s.slug === product.storeSlug);
+  const relatedFromStore = getRelatedFromSameStore(product);
+  const relatedFromOthers = getRelatedFromOtherStores(product);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -62,7 +65,12 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ProductDetailClient product={product} store={store} />
+      <ProductDetailClient
+        product={product}
+        store={store}
+        relatedFromStore={relatedFromStore}
+        relatedFromOthers={relatedFromOthers}
+      />
     </>
   );
 }
