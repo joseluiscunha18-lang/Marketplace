@@ -13,7 +13,7 @@ interface ProductCardProps {
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
-    <div className="flex items-center gap-1 mt-0.5">
+    <div className="flex items-center gap-1">
       <Star className="w-3.5 h-3.5 text-slate-800 fill-slate-800 shrink-0" style={{ marginTop: '-1px' }} />
       <span className="text-[12px] font-bold text-slate-800 leading-none">{rating.toFixed(1)}</span>
       <span className="text-[12px] text-slate-700 font-semibold leading-none">({count.toLocaleString('pt-MZ')})</span>
@@ -76,22 +76,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="px-2.5 pt-2 pb-2.5 flex flex-col flex-grow justify-between gap-1">
-        <div>
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-0.5">
-            {product.storeName}
-          </span>
+      <div className="px-2.5 pt-2 pb-2.5 flex flex-col flex-grow">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-0.5">
+          {product.storeName}
+        </span>
 
-          <h3 className="font-semibold text-[14px] text-slate-900 leading-snug line-clamp-2 group-hover:text-slate-600 transition-colors">
-            {product.name}
-          </h3>
+        <h3 className="font-semibold text-[14px] text-slate-900 leading-snug line-clamp-2 group-hover:text-slate-600 transition-colors">
+          {product.name}
+        </h3>
 
-          {product.rating && product.reviewCount ? (
+        {product.rating && product.reviewCount ? (
+          <div className="mt-1">
             <StarRating rating={product.rating} count={product.reviewCount} />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
-        <div className="flex items-baseline gap-1.5 mt-1">
+        <div className="flex items-baseline gap-1.5 mt-1.5">
           <span className="font-extrabold text-[16px] text-slate-900 tracking-tight flex items-baseline">
             {product.price.toLocaleString('pt-MZ')}
             <span className="text-[14px] font-bold text-slate-800 ml-1">MT</span>
