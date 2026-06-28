@@ -68,7 +68,8 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
   const [copied, setCopied] = useState(false);
-  const touchStartX = useRef<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const isProgrammaticScroll = useRef(false);
 
   const isFav = isFavorite(product.id);
 
@@ -93,20 +94,28 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   };
 
   const goTo = (index: number) => {
-    setActiveIndex(Math.max(0, Math.min(allImages.length - 1, index)));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) {
-      diff > 0 ? goTo(activeIndex + 1) : goTo(activeIndex - 1);
+    const clamped = Math.max(0, Math.min(allImages.length - 1, index));
+    setActiveIndex(clamped);
+    const el = scrollRef.current;
+    if (el) {
+      isProgrammaticScroll.current = true;
+      el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' });
+      // Liberta o flag de scroll-sync após a animação terminar
+      window.setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 400);
     }
-    touchStartX.current = null;
+  };
+
+  // Mantém activeIndex sincronizado enquanto o utilizador arrasta/desliza
+  const handleScroll = () => {
+    if (isProgrammaticScroll.current) return;
+    const el = scrollRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    if (index !== activeIndex) {
+      setActiveIndex(Math.max(0, Math.min(allImages.length - 1, index)));
+    }
   };
 
   return (
@@ -124,78 +133,84 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
 
             {/* Main image — fills the full 1:1, edge-to-edge on mobile */}
             <div className="relative w-full">
-              <div
-                className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100"
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-              >
-                {allImages.map((img, i) => (
-                  <div
-                    key={i}
-                    className={`absolute inset-0 transition-opacity duration-300 ${
-                      i === activeIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.name} — imagem ${i + 1}`}
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 1024px) 100vw, 58vw"
-                      priority={i === 0}
-                    />
-                  </div>
-                ))}
-
-                {/* Counter badge */}
-                {allImages.length > 1 && (
-                  <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
-                    {activeIndex + 1} / {allImages.length}
-                  </span>
-                )}
-
-                {/* More options button (shop.app style) */}
-                <button
-                  className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm"
-                  aria-label="Mais opções"
+              <div className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100">
+                {/* Scroller fluido — swipe nativo com inércia do navegador */}
+                <div
+                  ref={scrollRef}
+                  onScroll={handleScroll}
+                  className="absolute inset-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar scroll-smooth"
+                  style={{ scrollSnapType: 'x mandatory' }}
                 >
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
+                  {allImages.map((img, i) => (
+                    <div
+                      key={i}
+                      className="relative w-full h-full shrink-0 snap-start snap-always"
+                      style={{ scrollSnapAlign: 'start' }}
+                    >
+                      <Image
+                        src={img}
+                        alt={`${product.name} — imagem ${i + 1}`}
+                        fill
+                        className="object-cover object-center"
+                        sizes="(max-width: 1024px) 100vw, 58vw"
+                        priority={i === 0}
+                      />
+                    </div>
+                  ))}
+                </div>
 
-                {/* Desktop arrow buttons */}
-                {allImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => goTo(activeIndex - 1)}
-                      disabled={activeIndex === 0}
-                      className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm"
-                      aria-label="Imagem anterior"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => goTo(activeIndex + 1)}
-                      disabled={activeIndex === allImages.length - 1}
-                      className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm"
-                      aria-label="Próxima imagem"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
+                {/* Overlays — ficam fixos sobre o carrossel, não acompanham o scroll */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Counter badge */}
+                  {allImages.length > 1 && (
+                    <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
+                      {activeIndex + 1} / {allImages.length}
+                    </span>
+                  )}
+
+                  {/* More options button (shop.app style) */}
+                  <button
+                    className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm pointer-events-auto"
+                    aria-label="Mais opções"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+
+                  {/* Desktop arrow buttons */}
+                  {allImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => goTo(activeIndex - 1)}
+                        disabled={activeIndex === 0}
+                        className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm pointer-events-auto"
+                        aria-label="Imagem anterior"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => goTo(activeIndex + 1)}
+                        disabled={activeIndex === allImages.length - 1}
+                        className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm pointer-events-auto"
+                        aria-label="Próxima imagem"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Dots */}
               {allImages.length > 1 && (
-                <div className="flex justify-center gap-1.5 mt-3 pb-1">
+                <div className="flex justify-center gap-2 mt-3 pb-1">
                   {allImages.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => goTo(i)}
-                      className={`rounded-full transition-all duration-300 ${
+                      className={`rounded-full transition-all duration-300 shrink-0 ${
                         i === activeIndex
-                          ? 'w-5 h-1.5 bg-slate-900'
-                          : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'
+                          ? 'w-2.5 h-2.5 bg-slate-900'
+                          : 'w-2 h-2 bg-slate-500 hover:bg-slate-600'
                       }`}
                       aria-label={`Ir para imagem ${i + 1}`}
                     />
@@ -203,32 +218,6 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                 </div>
               )}
             </div>
-
-            {/* Thumbnails */}
-            {allImages.length > 1 && (
-              <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 px-4 lg:px-0 pt-2">
-                {allImages.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goTo(i)}
-                    className={`relative w-[72px] h-[72px] rounded-2xl overflow-hidden bg-slate-50 shrink-0 border-2 transition-all duration-200 ${
-                      i === activeIndex
-                        ? 'border-slate-900 scale-105 shadow-md'
-                        : 'border-slate-100 opacity-55 hover:opacity-100 hover:border-slate-300'
-                    }`}
-                    aria-label={`Ver imagem ${i + 1}`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.name} miniatura ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="72px"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* ── Info column ──────────────────────────────────────── */}
