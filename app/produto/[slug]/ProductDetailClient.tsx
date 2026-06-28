@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
-  ShieldCheck, ShoppingCart, ShoppingBag,
+  ShieldCheck,
   Check, Share2, Heart, ChevronLeft, ChevronRight,
   MoreHorizontal, Star, Truck, RefreshCcw, Lock,
 } from 'lucide-react';
@@ -373,18 +373,18 @@ export const ProductDetailClient = ({
               <div className="space-y-3 pt-4 border-t border-slate-100">
                 <button
                   onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
-                  className="w-full py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                  className="w-full py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center active:scale-[0.98] transition-all"
                 >
-                  <ShoppingCart className="w-4 h-4" /> Adicionar ao Carrinho
+                  Adicionar ao Carrinho
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                  className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center justify-center active:scale-[0.98] transition-all"
                 >
-                  <ShoppingBag className="w-4 h-4" /> Comprar Agora
+                  Comprar Agora
                 </button>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => toggleFavorite(product.id)}
                     className={`py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm ${
