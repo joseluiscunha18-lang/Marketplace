@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MessageSquare, MapPin, ShieldCheck, ShoppingCart, ArrowLeft, Check, Share2, Heart } from 'lucide-react';
+import { MessageSquare, MapPin, ShieldCheck, ShoppingCart, ArrowLeft, Check, Share2, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product, Store } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
@@ -11,10 +11,13 @@ import { useUser } from '@/context/UserContext';
 export const ProductDetailClient = ({ product, store }: { product: Product; store?: Store }) => {
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useUser();
-  const [selectedImage, setSelectedImage] = useState(product.image);
+
+  const allImages = product.images && product.images.length > 0 ? product.images : [product.image];
+  const [activeIndex, setActiveIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
   const [copied, setCopied] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   const isFav = isFavorite(product.id);
 
@@ -29,6 +32,23 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const goTo = (index: number) => {
+    setActiveIndex(Math.max(0, Math.min(allImages.length - 1, index)));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      diff > 0 ? goTo(activeIndex + 1) : goTo(activeIndex - 1);
+    }
+    touchStartX.current = null;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
       <div className="flex items-center justify-between pb-6 text-xs font-bold text-slate-500 border-b border-slate-100 mb-8">
@@ -39,29 +59,112 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Gallery */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="aspect-square w-full rounded-3xl bg-slate-50 border border-slate-100 overflow-hidden relative">
-            <Image src={selectedImage} alt={product.name} fill className="object-contain p-6" sizes="(max-width: 1024px) 100vw, 58vw" priority />
-          </div>
-          {product.images && product.images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-              {product.images.map((img, i) => (
-                <button
+
+        {/* ── Gallery ── */}
+        <div className="lg:col-span-7 space-y-3">
+
+          {/* Main image — 1:1 com padding lateral */}
+          <div className="relative w-full">
+            <div
+              className="relative w-full aspect-square overflow-hidden rounded-3xl bg-slate-50 border border-slate-100 px-3"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              {allImages.map((img, i) => (
+                <div
                   key={i}
-                  onClick={() => setSelectedImage(img)}
-                  className={`w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 p-1 border-2 transition-all shrink-0 relative ${
-                    selectedImage === img ? 'border-slate-900 scale-105' : 'border-slate-100 hover:border-slate-300 opacity-70 hover:opacity-100'
+                  className={`absolute inset-0 px-3 transition-opacity duration-300 ${
+                    i === activeIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
                   }`}
                 >
-                  <Image src={img} alt={`${product.name} vista ${i + 1}`} fill className="object-contain" sizes="80px" />
+                  <Image
+                    src={img}
+                    alt={`${product.name} — imagem ${i + 1}`}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 1024px) 100vw, 58vw"
+                    priority={i === 0}
+                  />
+                </div>
+              ))}
+
+              {/* Contador de imagens */}
+              {allImages.length > 1 && (
+                <span className="absolute top-3 right-4 bg-black/40 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
+                  {activeIndex + 1} / {allImages.length}
+                </span>
+              )}
+
+              {/* Setas de navegação — desktop */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => goTo(activeIndex - 1)}
+                    disabled={activeIndex === 0}
+                    className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-30 hover:bg-white transition-all shadow-sm"
+                    aria-label="Imagem anterior"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => goTo(activeIndex + 1)}
+                    disabled={activeIndex === allImages.length - 1}
+                    className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-30 hover:bg-white transition-all shadow-sm"
+                    aria-label="Próxima imagem"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Dots indicator */}
+            {allImages.length > 1 && (
+              <div className="flex justify-center gap-1.5 mt-3">
+                {allImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goTo(i)}
+                    className={`rounded-full transition-all duration-300 ${
+                      i === activeIndex
+                        ? 'w-5 h-1.5 bg-slate-900'
+                        : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'
+                    }`}
+                    aria-label={`Ir para imagem ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnails */}
+          {allImages.length > 1 && (
+            <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 px-0.5">
+              {allImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  className={`relative w-[72px] h-[72px] rounded-2xl overflow-hidden bg-slate-50 shrink-0 border-2 transition-all duration-200 ${
+                    i === activeIndex
+                      ? 'border-slate-900 scale-105 shadow-md'
+                      : 'border-slate-100 opacity-60 hover:opacity-100 hover:border-slate-300'
+                  }`}
+                  aria-label={`Ver imagem ${i + 1}`}
+                >
+                  <Image
+                    src={img}
+                    alt={`${product.name} miniatura ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="72px"
+                  />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Info */}
+        {/* ── Info ── */}
         <div className="lg:col-span-5 space-y-6 flex flex-col justify-between">
           <div className="space-y-6">
             {/* Store */}
@@ -174,8 +277,8 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
               <button
                 onClick={() => toggleFavorite(product.id)}
                 className={`py-3.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                  isFav 
-                    ? 'bg-red-50 text-red-600 border border-red-100' 
+                  isFav
+                    ? 'bg-red-50 text-red-600 border border-red-100'
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                 }`}
               >
