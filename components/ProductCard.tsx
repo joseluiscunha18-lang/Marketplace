@@ -16,7 +16,7 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
     <div className="flex items-center gap-1 mt-0.5">
       <Star className="w-3.5 h-3.5 text-slate-800 fill-slate-800 shrink-0" style={{ marginTop: '-1px' }} />
       <span className="text-[12px] font-bold text-slate-800 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[12px] text-slate-500 font-medium leading-none">({count.toLocaleString('pt-MZ')})</span>
+      <span className="text-[12px] text-slate-500 font-semibold leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -40,9 +40,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       href={`/produto/${product.slug}`}
-      className="group bg-white rounded-[18px] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] border border-slate-100"
+      className="group bg-white rounded-[18px] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] border border-slate-100 p-1.5"
     >
-      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden">
+      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-[14px]">
         <Image
           src={product.image}
           alt={product.name}
@@ -76,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="px-3.5 pt-3 pb-4 flex flex-col flex-grow justify-between gap-1.5">
+      <div className="px-2.5 pt-3 pb-3 flex flex-col flex-grow justify-between gap-1.5">
         <div>
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-1">
             {product.storeName}
