@@ -76,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="px-3 pt-2.5 pb-3 flex flex-col flex-grow">
+      <div className="px-3.5 pt-3 pb-3.5 flex flex-col flex-grow">
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-0.5">
           {product.storeName}
         </span>
