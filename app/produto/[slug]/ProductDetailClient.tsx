@@ -305,7 +305,7 @@ export const ProductDetailClient = ({
                         <button
                           key={sz}
                           onClick={() => setSelectedSize(sz)}
-                          className={`min-w-11 h-11 px-3 rounded-full text-xs font-extrabold border-2 transition-all ${
+                          className={`min-w-11 h-11 px-3 shrink-0 rounded-full text-xs font-extrabold border-2 transition-all flex items-center justify-center ${
                             selectedSize === sz
                               ? 'bg-white text-slate-900 border-slate-900'
                               : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
