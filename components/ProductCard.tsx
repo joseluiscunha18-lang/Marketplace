@@ -76,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="px-2.5 pt-2 pb-3 flex flex-col flex-grow justify-between gap-1.5">
+      <div className="px-2.5 pt-2 pb-2.5 flex flex-col flex-grow justify-between gap-1">
         <div>
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-0.5">
             {product.storeName}
@@ -91,14 +91,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ) : null}
         </div>
 
-        <div className="flex items-baseline gap-2 mt-2">
-          <span className="font-extrabold text-[17px] text-slate-900 tracking-tight flex items-baseline">
+        <div className="flex items-baseline gap-1.5 mt-1">
+          <span className="font-extrabold text-[16px] text-slate-900 tracking-tight flex items-baseline">
             {product.price.toLocaleString('pt-MZ')}
-            <span className="text-[15px] font-bold text-slate-800 ml-1">MT</span>
+            <span className="text-[14px] font-bold text-slate-800 ml-1">MT</span>
           </span>
           
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-[13px] text-slate-600 line-through font-medium">
+            <span className="text-[12px] text-slate-600 line-through font-medium">
               {product.originalPrice.toLocaleString('pt-MZ')} MT
             </span>
           )}
