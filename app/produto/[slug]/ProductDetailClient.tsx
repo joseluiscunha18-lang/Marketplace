@@ -99,7 +99,8 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
     const el = scrollRef.current;
     if (el) {
       isProgrammaticScroll.current = true;
-      el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' });
+      const step = el.scrollWidth / allImages.length;
+      el.scrollTo({ left: clamped * step, behavior: 'smooth' });
       // Liberta o flag de scroll-sync após a animação terminar
       window.setTimeout(() => {
         isProgrammaticScroll.current = false;
@@ -111,8 +112,9 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   const handleScroll = () => {
     if (isProgrammaticScroll.current) return;
     const el = scrollRef.current;
-    if (!el || el.clientWidth === 0) return;
-    const index = Math.round(el.scrollLeft / el.clientWidth);
+    if (!el || el.scrollWidth === 0) return;
+    const step = el.scrollWidth / allImages.length;
+    const index = Math.round(el.scrollLeft / step);
     if (index !== activeIndex) {
       setActiveIndex(Math.max(0, Math.min(allImages.length - 1, index)));
     }
@@ -131,72 +133,74 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
               <StoreTopBar product={product} store={store} />
             </div>
 
-            {/* Main image — fills the full 1:1, edge-to-edge on mobile */}
+            {/* Main image — fills the full 1:1, edge-to-edge on mobile, com preview lateral da próxima imagem */}
             <div className="relative w-full">
               <div className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100">
-                {/* Scroller fluido — swipe nativo com inércia do navegador */}
+                {/* Scroller fluido — swipe nativo com inércia do navegador, slides com peek lateral */}
                 <div
                   ref={scrollRef}
                   onScroll={handleScroll}
-                  className="absolute inset-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar scroll-smooth"
+                  className="absolute inset-0 flex gap-2 overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar scroll-smooth"
                   style={{ scrollSnapType: 'x mandatory' }}
                 >
                   {allImages.map((img, i) => (
                     <div
                       key={i}
-                      className="relative w-full h-full shrink-0 snap-start snap-always"
-                      style={{ scrollSnapAlign: 'start' }}
+                      className="relative h-full shrink-0 snap-start snap-always rounded-2xl overflow-hidden"
+                      style={{ scrollSnapAlign: 'start', width: allImages.length > 1 ? '92%' : '100%' }}
                     >
                       <Image
                         src={img}
                         alt={`${product.name} — imagem ${i + 1}`}
                         fill
                         className="object-cover object-center"
-                        sizes="(max-width: 1024px) 100vw, 58vw"
+                        sizes="(max-width: 1024px) 92vw, 53vw"
                         priority={i === 0}
                       />
+
+                      {/* Overlays — vivem dentro do slide activo para acompanhar a imagem visível */}
+                      {i === activeIndex && (
+                        <div className="absolute inset-0 pointer-events-none">
+                          {/* Counter badge */}
+                          {allImages.length > 1 && (
+                            <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
+                              {activeIndex + 1} / {allImages.length}
+                            </span>
+                          )}
+
+                          {/* More options button (shop.app style) */}
+                          <button
+                            className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm pointer-events-auto"
+                            aria-label="Mais opções"
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+
+                          {/* Desktop arrow buttons */}
+                          {allImages.length > 1 && (
+                            <>
+                              <button
+                                onClick={() => goTo(activeIndex - 1)}
+                                disabled={activeIndex === 0}
+                                className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm pointer-events-auto"
+                                aria-label="Imagem anterior"
+                              >
+                                <ChevronLeft className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => goTo(activeIndex + 1)}
+                                disabled={activeIndex === allImages.length - 1}
+                                className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm pointer-events-auto"
+                                aria-label="Próxima imagem"
+                              >
+                                <ChevronRight className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
-                </div>
-
-                {/* Overlays — ficam fixos sobre o carrossel, não acompanham o scroll */}
-                <div className="absolute inset-0 pointer-events-none">
-                  {/* Counter badge */}
-                  {allImages.length > 1 && (
-                    <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
-                      {activeIndex + 1} / {allImages.length}
-                    </span>
-                  )}
-
-                  {/* More options button (shop.app style) */}
-                  <button
-                    className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm pointer-events-auto"
-                    aria-label="Mais opções"
-                  >
-                    <MoreHorizontal className="w-5 h-5" />
-                  </button>
-
-                  {/* Desktop arrow buttons */}
-                  {allImages.length > 1 && (
-                    <>
-                      <button
-                        onClick={() => goTo(activeIndex - 1)}
-                        disabled={activeIndex === 0}
-                        className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm pointer-events-auto"
-                        aria-label="Imagem anterior"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => goTo(activeIndex + 1)}
-                        disabled={activeIndex === allImages.length - 1}
-                        className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm pointer-events-auto"
-                        aria-label="Próxima imagem"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
                 </div>
               </div>
 
