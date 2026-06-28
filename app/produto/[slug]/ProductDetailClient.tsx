@@ -133,28 +133,28 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
               <StoreTopBar product={product} store={store} />
             </div>
 
-            {/* Main image — fills the full 1:1, edge-to-edge on mobile, com preview lateral da próxima imagem */}
-            <div className="relative w-full">
-              <div className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100">
-                {/* Scroller fluido — swipe nativo com inércia do navegador, slides com peek lateral */}
+            {/* Main image — com respiro lateral, imagem centralizada e isolada */}
+            <div className="relative w-full px-3 lg:px-0">
+              <div className="relative w-full aspect-square overflow-hidden bg-slate-100 rounded-3xl lg:border lg:border-slate-100">
+                {/* Scroller fluido — swipe nativo com inércia do navegador */}
                 <div
                   ref={scrollRef}
                   onScroll={handleScroll}
-                  className="absolute inset-0 flex gap-2 overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar scroll-smooth"
+                  className="absolute inset-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar scroll-smooth"
                   style={{ scrollSnapType: 'x mandatory' }}
                 >
                   {allImages.map((img, i) => (
                     <div
                       key={i}
-                      className="relative h-full shrink-0 snap-start snap-always rounded-2xl overflow-hidden"
-                      style={{ scrollSnapAlign: 'start', width: allImages.length > 1 ? '92%' : '100%' }}
+                      className="relative w-full h-full shrink-0 snap-start snap-always"
+                      style={{ scrollSnapAlign: 'start' }}
                     >
                       <Image
                         src={img}
                         alt={`${product.name} — imagem ${i + 1}`}
                         fill
                         className="object-cover object-center"
-                        sizes="(max-width: 1024px) 92vw, 53vw"
+                        sizes="(max-width: 1024px) 100vw, 53vw"
                         priority={i === 0}
                       />
 
