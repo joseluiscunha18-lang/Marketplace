@@ -68,8 +68,12 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
   const [copied, setCopied] = useState(false);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const isProgrammaticScroll = useRef(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const dragStartX = useRef(0);
+  const containerWidth = useRef(0);
+  const pointerId = useRef<number | null>(null);
 
   const isFav = isFavorite(product.id);
 
@@ -96,28 +100,51 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   const goTo = (index: number) => {
     const clamped = Math.max(0, Math.min(allImages.length - 1, index));
     setActiveIndex(clamped);
-    const el = scrollRef.current;
-    if (el) {
-      isProgrammaticScroll.current = true;
-      const step = el.scrollWidth / allImages.length;
-      el.scrollTo({ left: clamped * step, behavior: 'smooth' });
-      // Liberta o flag de scroll-sync após a animação terminar
-      window.setTimeout(() => {
-        isProgrammaticScroll.current = false;
-      }, 400);
-    }
   };
 
-  // Mantém activeIndex sincronizado enquanto o utilizador arrasta/desliza
-  const handleScroll = () => {
-    if (isProgrammaticScroll.current) return;
-    const el = scrollRef.current;
-    if (!el || el.scrollWidth === 0) return;
-    const step = el.scrollWidth / allImages.length;
-    const index = Math.round(el.scrollLeft / step);
-    if (index !== activeIndex) {
-      setActiveIndex(Math.max(0, Math.min(allImages.length - 1, index)));
+  // Inicia o arrasto — o próprio container da imagem passa a seguir o dedo/rato
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (allImages.length <= 1) return;
+    pointerId.current = e.pointerId;
+    dragStartX.current = e.clientX;
+    containerWidth.current = trackRef.current?.parentElement?.clientWidth ?? 1;
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || pointerId.current !== e.pointerId) return;
+    let delta = e.clientX - dragStartX.current;
+
+    // Resistência elástica nas pontas (primeira/última imagem)
+    if ((activeIndex === 0 && delta > 0) || (activeIndex === allImages.length - 1 && delta < 0)) {
+      delta *= 0.35;
     }
+    setDragOffset(delta);
+  };
+
+  const finishDrag = () => {
+    if (!isDragging) return;
+    const width = containerWidth.current || 1;
+    const threshold = width * 0.18;
+
+    if (dragOffset <= -threshold && activeIndex < allImages.length - 1) {
+      setActiveIndex(activeIndex + 1);
+    } else if (dragOffset >= threshold && activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
+    }
+
+    setIsDragging(false);
+    setDragOffset(0);
+    pointerId.current = null;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (pointerId.current !== e.pointerId) return;
+    finishDrag();
+  };
+
+  const handlePointerCancel = () => {
+    finishDrag();
   };
 
   return (
@@ -135,27 +162,38 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
 
             {/* Main image — com respiro lateral, imagem centralizada e isolada */}
             <div className="relative w-full px-3 lg:px-0">
-              <div className="relative w-full aspect-square overflow-hidden bg-slate-100 rounded-3xl lg:border lg:border-slate-100">
-                {/* Scroller fluido — swipe nativo com inércia do navegador */}
+              <div
+                className="relative w-full aspect-square overflow-hidden bg-slate-100 rounded-3xl lg:border lg:border-slate-100 touch-pan-y select-none"
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
+                onPointerLeave={handlePointerCancel}
+              >
+                {/* Track — é o próprio container que se move ao arrastar, sem scroll nativo */}
                 <div
-                  ref={scrollRef}
-                  onScroll={handleScroll}
-                  className="absolute inset-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory no-scrollbar scroll-smooth"
-                  style={{ scrollSnapType: 'x mandatory' }}
+                  ref={trackRef}
+                  className="absolute inset-0 flex h-full"
+                  style={{
+                    width: `${allImages.length * 100}%`,
+                    transform: `translateX(calc(${-activeIndex * (100 / allImages.length)}% + ${dragOffset}px))`,
+                    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+                  }}
                 >
                   {allImages.map((img, i) => (
                     <div
                       key={i}
-                      className="relative w-full h-full shrink-0 snap-start snap-always"
-                      style={{ scrollSnapAlign: 'start' }}
+                      className="relative h-full shrink-0"
+                      style={{ width: `${100 / allImages.length}%` }}
                     >
                       <Image
                         src={img}
                         alt={`${product.name} — imagem ${i + 1}`}
                         fill
-                        className="object-cover object-center"
+                        className="object-cover object-center pointer-events-none"
                         sizes="(max-width: 1024px) 100vw, 53vw"
                         priority={i === 0}
+                        draggable={false}
                       />
 
                       {/* Overlays — vivem dentro do slide activo para acompanhar a imagem visível */}
@@ -380,7 +418,4 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
+      </
