@@ -17,7 +17,9 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&q=80',
       'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&q=80',
-      'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=800&q=80'
+      'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=800&q=80',
+      'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80',
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
     ],
     description: 'O brilho vive no Nike Air Force 1 \'07, o ícone do basquetebol que dá um toque renovado àquilo que conheces melhor: pele fresca, cores simples e a quantidade perfeita de brilho para te fazer sobressair.',
     sizes: ['39', '40', '41', '42', '43', '44'],
@@ -42,7 +44,9 @@ export const MOCK_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=600&q=80',
     images: [
       'https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=800&q=80',
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80'
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
+      'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&q=80',
+      'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=80',
     ],
     description: 'Nascido nos campos de futebol indoor dos anos 50, o clássico Samba conquistou as ruas mundiais.',
     sizes: ['38', '39', '40', '41', '42'],
