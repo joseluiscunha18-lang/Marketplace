@@ -131,9 +131,9 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
               <StoreTopBar product={product} store={store} />
             </div>
 
-            {/* Main image — fills the full 1:1, edge-to-edge on mobile */}
-            <div className="relative w-full">
-              <div className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100">
+            {/* Container da Imagem principal adaptado com padding lateral no mobile */}
+            <div className="relative w-full px-4 lg:px-0 mt-2 lg:mt-0">
+              <div className="relative w-full aspect-square overflow-hidden bg-slate-100 rounded-3xl lg:border lg:border-slate-100">
                 {/* Scroller fluido — swipe nativo com inércia do navegador */}
                 <div
                   ref={scrollRef}
