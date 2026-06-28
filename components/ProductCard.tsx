@@ -91,10 +91,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         ) : null}
 
-        <div className="flex items-baseline gap-1.5 mt-1.5">
-          <span className="font-extrabold text-[16px] text-slate-900 tracking-tight flex items-baseline">
+        <div className="flex items-baseline gap-1.5 mt-0.5">
+          <span className="font-extrabold text-[15px] text-slate-900 tracking-tight flex items-baseline">
             {product.price.toLocaleString('pt-MZ')}
-            <span className="text-[14px] font-bold text-slate-800 ml-1">MT</span>
+            <span className="text-[13px] font-bold text-slate-800 ml-1">MT</span>
           </span>
           
           {product.originalPrice && product.originalPrice > product.price && (
