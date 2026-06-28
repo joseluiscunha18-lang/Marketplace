@@ -13,11 +13,10 @@ interface ProductCardProps {
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
-    <div className="flex items-center gap-1">
-      {/* Estrela sólida, âmbar nítido, alinhada com o texto */}
+    <div className="flex items-center gap-1 mt-0.5">
       <Star className="w-3.5 h-3.5 text-slate-800 fill-slate-800 shrink-0" style={{ marginTop: '-1px' }} />
-      <span className="text-[12px] font-bold text-slate-700 leading-none">{rating.toFixed(1)}</span>
-      <span className="text-[12px] text-slate-600 font-medium leading-none">({count.toLocaleString('pt-MZ')})</span>
+      <span className="text-[12px] font-bold text-slate-800 leading-none">{rating.toFixed(1)}</span>
+      <span className="text-[12px] text-slate-500 font-medium leading-none">({count.toLocaleString('pt-MZ')})</span>
     </div>
   );
 }
@@ -41,77 +40,69 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       href={`/produto/${product.slug}`}
-      className="group bg-white rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] border border-slate-100 hover:border-slate-200"
+      className="group bg-white rounded-[18px] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] border border-slate-100"
     >
-      {/* Square Image — 1:1 */}
-      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-2xl">
+      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden">
         <Image
           src={product.image}
           alt={product.name}
           fill
-          className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
-        {/* Badges — subtis, integrados */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
           {discountPercent > 0 && (
-            <span className="bg-black/45 backdrop-blur-sm text-white font-semibold text-[10px] px-1.5 py-0.5 rounded-md tracking-wide">
+            <span className="bg-slate-900/80 backdrop-blur-md text-white font-semibold text-[10px] px-2 py-1 rounded-md tracking-wider shadow-sm">
               -{discountPercent}%
             </span>
           )}
           {product.featured && !discountPercent && (
-            <span className="bg-black/35 backdrop-blur-sm text-white/90 font-medium text-[9px] px-1.5 py-0.5 rounded-md tracking-wide">
+            <span className="bg-white/80 backdrop-blur-md text-slate-900 font-semibold text-[10px] px-2 py-1 rounded-md tracking-wider shadow-sm border border-slate-200/50">
               Destaque
             </span>
           )}
         </div>
 
-        {/* Favorite button */}
         <button
           onClick={handleToggleFavorite}
-          className={`absolute top-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-sm ${
+          className={`absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm backdrop-blur-md ${
             isFav
               ? 'bg-red-500 text-white'
-              : 'bg-white/70 backdrop-blur-sm text-slate-400 hover:text-red-500'
+              : 'bg-white/80 text-slate-500 hover:text-red-500 hover:bg-white'
           }`}
         >
-          <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-white' : ''}`} />
+          <Heart className={`w-4 h-4 ${isFav ? 'fill-white' : ''}`} />
         </button>
       </div>
 
-      {/* Content — padding reduzido p-3 para aproximar da imagem */}
-      <div className="px-3 pt-2.5 pb-3 flex flex-col gap-0.5">
-
-        {/* Store name — mais contraste: slate-600 em vez de slate-400 */}
-        <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest truncate">
-          {product.storeName}
-        </span>
-
-        {/* Product name — dominante */}
-        <h3 className="font-bold text-[13px] text-black leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors min-h-[2.4em] mt-0.5">
-          {product.name}
-        </h3>
-
-        {/* Rating — mais contraste, estrela âmbar nítida */}
-        {product.rating && product.reviewCount ? (
-          <StarRating rating={product.rating} count={product.reviewCount} />
-        ) : null}
-
-        {/* Price — valor e MT unificados em tamanho e peso */}
-        <div className="flex items-baseline gap-2 mt-1">
-          <span className="font-black text-[16px] text-slate-950 tracking-tight leading-none">
-            {product.price.toLocaleString('pt-MZ')}
-            <span className="text-[11px] font-bold text-slate-700 ml-[2px]">MT</span>
+      <div className="px-3.5 pt-3 pb-4 flex flex-col flex-grow justify-between gap-1.5">
+        <div>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate block mb-1">
+            {product.storeName}
           </span>
+
+          <h3 className="font-semibold text-[14px] text-slate-900 leading-snug line-clamp-2 group-hover:text-slate-600 transition-colors">
+            {product.name}
+          </h3>
+
+          {product.rating && product.reviewCount ? (
+            <StarRating rating={product.rating} count={product.reviewCount} />
+          ) : null}
+        </div>
+
+        <div className="flex items-baseline gap-2 mt-2">
+          <span className="font-extrabold text-[17px] text-slate-900 tracking-tight flex items-baseline">
+            {product.price.toLocaleString('pt-MZ')}
+            <span className="text-[15px] font-bold text-slate-800 ml-1">MT</span>
+          </span>
+          
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-[12px] text-slate-400 line-through font-medium leading-none">
-              {product.originalPrice.toLocaleString('pt-MZ')}
-              <span className="text-[10px] ml-[1px]">MT</span>
+            <span className="text-[13px] text-slate-600 line-through font-medium">
+              {product.originalPrice.toLocaleString('pt-MZ')} MT
             </span>
           )}
         </div>
-
       </div>
     </Link>
   );
