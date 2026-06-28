@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   MessageSquare, MapPin, ShieldCheck, ShoppingCart,
-  ArrowLeft, Check, Share2, Heart, ChevronLeft, ChevronRight,
+  Check, Share2, Heart, ChevronLeft, ChevronRight,
   MoreHorizontal, Star,
 } from 'lucide-react';
 import type { Product, Store } from '@/types';
@@ -102,16 +102,6 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
 
   return (
     <div className="pb-24">
-      {/* breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-4 text-xs font-bold text-slate-500 border-b border-slate-100">
-          <Link href="/produtos" className="flex items-center gap-1.5 text-slate-800 hover:text-emerald-600">
-            <ArrowLeft className="w-4 h-4" /> Voltar aos produtos
-          </Link>
-          <span>{product.category} • {product.storeLocation}</span>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-10 lg:px-4 sm:px-6 lg:py-8">
 
