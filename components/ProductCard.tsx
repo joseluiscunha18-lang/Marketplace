@@ -40,9 +40,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       href={`/produto/${product.slug}`}
-      className="group bg-white rounded-[18px] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] border border-slate-100 p-1.5"
+      className="group bg-white rounded-[18px] overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] border border-slate-100" // Removido p-1.5 aqui
     >
-      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-[14px]">
+      <div className="relative w-full aspect-square bg-slate-50 overflow-hidden rounded-t-[14px]"> {/* Ajustado arredondamento apenas no topo */}
         <Image
           src={product.image}
           alt={product.name}
