@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -71,6 +71,15 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   const touchStartX = useRef<number | null>(null);
 
   const isFav = isFavorite(product.id);
+
+  // Oculta o Header global nesta página (substituído pela StoreTopBar)
+  useEffect(() => {
+    const header = document.querySelector('header');
+    if (header) header.style.display = 'none';
+    return () => {
+      if (header) header.style.display = '';
+    };
+  }, []);
 
   const phone = store?.whatsapp ?? '258840000000';
   const productUrl = `https://shopyump.com/produto/${product.slug}`;
