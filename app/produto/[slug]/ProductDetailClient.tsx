@@ -68,7 +68,6 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
   const [copied, setCopied] = useState(false);
-  const touchStartX = useRef<number | null>(null);
 
   const isFav = isFavorite(product.id);
 
@@ -92,21 +91,14 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
   const goTo = (index: number) => {
-    setActiveIndex(Math.max(0, Math.min(allImages.length - 1, index)));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) {
-      diff > 0 ? goTo(activeIndex + 1) : goTo(activeIndex - 1);
+    const clamped = Math.max(0, Math.min(allImages.length - 1, index));
+    setActiveIndex(clamped);
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollTo({ left: clamped * scrollerRef.current.offsetWidth, behavior: 'smooth' });
     }
-    touchStartX.current = null;
   };
 
   return (
@@ -122,19 +114,24 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
               <StoreTopBar product={product} store={store} />
             </div>
 
-            {/* Main image — fills the full 1:1, edge-to-edge on mobile */}
+            {/* Main image — horizontal smooth scroll with snap */}
             <div className="relative w-full">
+              {/* Scroll container */}
               <div
-                className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100"
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
+                ref={scrollerRef}
+                className="flex overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory"
+                style={{ scrollBehavior: 'smooth' }}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const index = Math.round(el.scrollLeft / el.offsetWidth);
+                  setActiveIndex(index);
+                }}
               >
                 {allImages.map((img, i) => (
                   <div
                     key={i}
-                    className={`absolute inset-0 transition-opacity duration-300 ${
-                      i === activeIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
+                    className="relative w-full aspect-square shrink-0 snap-center bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100 overflow-hidden"
+                    style={{ minWidth: '100%' }}
                   >
                     <Image
                       src={img}
@@ -146,56 +143,56 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                     />
                   </div>
                 ))}
-
-                {/* Counter badge */}
-                {allImages.length > 1 && (
-                  <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
-                    {activeIndex + 1} / {allImages.length}
-                  </span>
-                )}
-
-                {/* More options button (shop.app style) */}
-                <button
-                  className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm"
-                  aria-label="Mais opções"
-                >
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
-
-                {/* Desktop arrow buttons */}
-                {allImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => goTo(activeIndex - 1)}
-                      disabled={activeIndex === 0}
-                      className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm"
-                      aria-label="Imagem anterior"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => goTo(activeIndex + 1)}
-                      disabled={activeIndex === allImages.length - 1}
-                      className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm"
-                      aria-label="Próxima imagem"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
               </div>
 
-              {/* Dots */}
+              {/* Counter badge */}
               {allImages.length > 1 && (
-                <div className="flex justify-center gap-1.5 mt-3 pb-1">
+                <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10 pointer-events-none">
+                  {activeIndex + 1} / {allImages.length}
+                </span>
+              )}
+
+              {/* More options button */}
+              <button
+                className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm"
+                aria-label="Mais opções"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+
+              {/* Desktop arrow buttons */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => goTo(activeIndex - 1)}
+                    disabled={activeIndex === 0}
+                    className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm"
+                    aria-label="Imagem anterior"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => goTo(activeIndex + 1)}
+                    disabled={activeIndex === allImages.length - 1}
+                    className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 items-center justify-center text-slate-700 disabled:opacity-20 hover:bg-white transition-all shadow-sm"
+                    aria-label="Próxima imagem"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Dots — redondos, mais escuros */}
+              {allImages.length > 1 && (
+                <div className="flex justify-center gap-2 mt-3 pb-1">
                   {allImages.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => goTo(i)}
                       className={`rounded-full transition-all duration-300 ${
                         i === activeIndex
-                          ? 'w-5 h-1.5 bg-slate-900'
-                          : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'
+                          ? 'w-2.5 h-2.5 bg-slate-800'
+                          : 'w-2 h-2 bg-slate-500 hover:bg-slate-600'
                       }`}
                       aria-label={`Ir para imagem ${i + 1}`}
                     />
@@ -203,31 +200,6 @@ export const ProductDetailClient = ({ product, store }: { product: Product; stor
                 </div>
               )}
             </div>
-
-            {/* Thumbnails */}
-            {allImages.length > 1 && (
-              <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 px-4 lg:px-0 pt-2">
-                {allImages.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goTo(i)}
-                    className={`relative w-[72px] h-[72px] rounded-2xl overflow-hidden bg-slate-50 shrink-0 border-2 transition-all duration-200 ${
-                      i === activeIndex
-                        ? 'border-slate-900 scale-105 shadow-md'
-                        : 'border-slate-100 opacity-55 hover:opacity-100 hover:border-slate-300'
-                    }`}
-                    aria-label={`Ver imagem ${i + 1}`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.name} miniatura ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="72px"
-                    />
-                  </button>
-                ))}
-              </div>
             )}
           </div>
 
