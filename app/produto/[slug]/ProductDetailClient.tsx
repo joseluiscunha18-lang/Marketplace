@@ -307,7 +307,7 @@ export const ProductDetailClient = ({
                           onClick={() => setSelectedSize(sz)}
                           className={`min-w-11 h-11 px-3 rounded-full text-xs font-extrabold border-2 transition-all ${
                             selectedSize === sz
-                              ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                              ? 'bg-white text-slate-900 border-slate-900'
                               : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
                           }`}
                         >
@@ -330,7 +330,7 @@ export const ProductDetailClient = ({
                           onClick={() => setSelectedColor(c.name)}
                           className={`px-4 py-2.5 rounded-full text-xs font-bold border-2 transition-all ${
                             selectedColor === c.name
-                              ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                              ? 'bg-white text-slate-900 border-slate-900'
                               : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
                           }`}
                         >
