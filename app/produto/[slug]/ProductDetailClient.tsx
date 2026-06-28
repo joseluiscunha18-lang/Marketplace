@@ -342,6 +342,49 @@ export const ProductDetailClient = ({
                 )}
               </div>
 
+              {/* CTA Buttons — Adicionar ao carrinho / Comprar agora, depois Guardar / Partilhar */}
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
+                    className="py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                  >
+                    <ShoppingCart className="w-4 h-4" /> Adicionar ao Carrinho
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    className="py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                  >
+                    <ShoppingBag className="w-4 h-4" /> Comprar Agora
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => toggleFavorite(product.id)}
+                    className={`py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                      isFav
+                        ? 'bg-red-50 text-red-600 border border-red-100'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    <Heart className={`w-4 h-4 ${isFav ? 'fill-red-600' : ''}`} />
+                    {isFav ? 'Guardado' : 'Guardar'}
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                    {copied ? 'Copiado!' : 'Partilhar'}
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3 h-3" /> Venda directa combinada de forma segura com o lojista de {product.storeLocation}.
+                </p>
+              </div>
+
               {/* Description */}
               <div className="space-y-2 pt-4 border-t border-slate-100">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Descrição do Produto</span>
@@ -374,49 +417,6 @@ export const ProductDetailClient = ({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="space-y-3 pt-6 border-t border-slate-100">
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
-                  className="py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-                >
-                  <ShoppingCart className="w-4 h-4" /> Adicionar ao Carrinho
-                </button>
-                <button
-                  onClick={handleBuyNow}
-                  className="py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-                >
-                  <ShoppingBag className="w-4 h-4" /> Comprar Agora
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => toggleFavorite(product.id)}
-                  className={`py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                    isFav
-                      ? 'bg-red-50 text-red-600 border border-red-100'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 ${isFav ? 'fill-red-600' : ''}`} />
-                  {isFav ? 'Guardado' : 'Guardar'}
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
-                >
-                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
-                  {copied ? 'Copiado!' : 'Partilhar'}
-                </button>
-              </div>
-
-              <p className="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
-                <ShieldCheck className="w-3 h-3" /> Venda directa combinada de forma segura com o lojista de {product.storeLocation}.
-              </p>
             </div>
           </div>
         </div>
