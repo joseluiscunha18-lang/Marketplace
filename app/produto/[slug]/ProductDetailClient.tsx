@@ -417,4 +417,66 @@ export const ProductDetailClient = ({
               <p className="text-[10px] text-center text-slate-400 flex items-center justify-center gap-1">
                 <ShieldCheck className="w-3 h-3" /> Venda directa combinada de forma segura com o lojista de {product.storeLocation}.
               </p>
-    
+            </div>
+          </div>
+        </div>
+
+        {/* ── Produtos relacionados ─────────────────────────────────── */}
+        <div className="px-4 lg:px-4 mt-10 space-y-10">
+          {relatedFromStore.length > 0 && (
+            <RelatedSection
+              title={`Mais de ${product.storeName}`}
+              ctaHref={`/loja/${product.storeSlug}`}
+              ctaLabel="Visitar loja"
+              products={relatedFromStore}
+            />
+          )}
+
+          {relatedFromOthers.length > 0 && (
+            <RelatedSection
+              title="Também poderá gostar de"
+              ctaHref="/produtos"
+              ctaLabel="Ver mais"
+              products={relatedFromOthers}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Related products carousel/grid section ────────────────────────── */
+function RelatedSection({
+  title,
+  ctaHref,
+  ctaLabel,
+  products,
+}: {
+  title: string;
+  ctaHref: string;
+  ctaLabel: string;
+  products: Product[];
+}) {
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-3.5">
+        <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">{title}</h2>
+        <Link
+          href={ctaHref}
+          className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1 shrink-0 transition-colors"
+        >
+          {ctaLabel}
+          <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+      <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 sm:grid sm:grid-cols-3 lg:grid-cols-4 sm:gap-4 sm:mx-0 sm:px-0">
+        {products.map((p) => (
+          <div key={p.id} className="w-[42%] shrink-0 sm:w-auto sm:shrink">
+            <ProductCard product={p} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
