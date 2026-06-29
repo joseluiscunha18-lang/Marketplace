@@ -7,11 +7,11 @@ import { Home, Tag, ShoppingCart, Heart, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 // Páginas onde a barra inferior aparece (apenas o marketplace e as suas sub-secções)
-const MARKETPLACE_ROUTES = ['/produtos', '/lojas', '/promocoes', '/favoritos', '/conta', '/produto', '/loja', '/checkout'];
+const MARKETPLACE_ROUTES = ['/produtos', '/lojas', '/promocoes', '/favoritos', '/conta', '/produto', '/loja', '/checkout', '/carrinho'];
 
 export const BottomNav = () => {
   const pathname = usePathname();
-  const { totalItems, setIsCartOpen, cartAnimating } = useCart();
+  const { totalItems, cartAnimating } = useCart();
 
   // Só renderiza nas páginas do marketplace
   const shouldShow = MARKETPLACE_ROUTES.some((route) => pathname.startsWith(route));
@@ -35,9 +35,9 @@ export const BottomNav = () => {
     {
       label: 'Carrinho',
       icon: ShoppingCart,
-      href: null,
-      matchRoutes: [],
-      onClick: () => setIsCartOpen(true),
+      href: '/carrinho',
+      matchRoutes: ['/carrinho'],
+      onClick: undefined,
       badge: totalItems,
       isCart: true,
     },
@@ -147,6 +147,7 @@ export const BottomNav = () => {
               <Link
                 key={item.href!}
                 href={item.href!}
+                data-cart-icon={item.isCart ? 'true' : undefined}
                 className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-2xl transition-all duration-200 active:scale-90"
               >
                 {inner}
