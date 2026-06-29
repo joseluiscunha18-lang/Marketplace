@@ -86,6 +86,7 @@ export const ProductDetailClient = ({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const isProgrammaticScroll = useRef(false);
 
+  const [reviewsOpen, setReviewsOpen] = useState(false);
   const isFav = isFavorite(product.id);
 
   // Oculta o Header global nesta página (substituído pela StoreTopBar)
@@ -138,6 +139,9 @@ export const ProductDetailClient = ({
 
   return (
     <div className="pb-24">
+      {/* Drawer global (abre ao clicar nas estrelas ou no botão de avaliações) */}
+      <ReviewsDrawer product={product} open={reviewsOpen} onClose={() => setReviewsOpen(false)} />
+
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-10 lg:px-4 sm:px-6 lg:py-8">
 
@@ -267,7 +271,10 @@ export const ProductDetailClient = ({
                         className={`w-4 h-4 ${i < Math.round(product.rating!) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`}
                       />
                     ))}
-                    <button className="ml-1 text-[13px] font-bold text-slate-600 underline underline-offset-2">
+                    <button
+                      onClick={() => setReviewsOpen(true)}
+                      className="ml-1 text-[13px] font-bold text-slate-600 underline underline-offset-2"
+                    >
                       {product.reviewCount.toLocaleString('pt-MZ')} classificações
                     </button>
                   </div>
@@ -419,7 +426,7 @@ export const ProductDetailClient = ({
 
               {/* Avaliações */}
               <div className="pt-4 border-t border-slate-100">
-                <ReviewsSection product={product} />
+                <ReviewsSection product={product} onOpenDrawer={() => setReviewsOpen(true)} />
               </div>
             </div>
           </div>
@@ -449,6 +456,257 @@ export const ProductDetailClient = ({
     </div>
   );
 };
+
+/* ─── Reviews Drawer (Etsy / shop.app style) ─────────────────────── */
+function ReviewsDrawer({
+  product,
+  open,
+  onClose,
+}: {
+  product: Product;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const reviews = product.reviews ?? [];
+  const rating = product.rating ?? 0;
+  const reviewCount = product.reviewCount ?? reviews.length;
+  const [search, setSearch] = useState('');
+  const [filterStars, setFilterStars] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(8);
+
+  // Reset ao fechar
+  useEffect(() => {
+    if (!open) {
+      setSearch('');
+      setFilterStars(null);
+      setVisibleCount(8);
+    }
+  }, [open]);
+
+  // Bloqueia scroll do body quando aberto
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  const distribution = [5, 4, 3, 2, 1].map((stars) => {
+    if (reviews.length > 0) {
+      const count = reviews.filter((r) => Math.round(r.rating) === stars).length;
+      return { stars, percent: Math.round((count / reviews.length) * 100), count };
+    }
+    const distance = Math.abs(stars - rating);
+    const weight = Math.max(0, 5 - distance * 3.2);
+    return { stars, percent: Math.round(weight * 14), count: 0 };
+  });
+
+  const filtered = reviews.filter((r) => {
+    const matchStars = filterStars === null || Math.round(r.rating) === filterStars;
+    const matchSearch =
+      search === '' ||
+      r.text.toLowerCase().includes(search.toLowerCase()) ||
+      r.author.toLowerCase().includes(search.toLowerCase());
+    return matchStars && matchSearch;
+  });
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visible.length < filtered.length;
+
+  if (!open) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/40 z-40 backdrop-blur-[2px]"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Drawer */}
+      <div className="fixed inset-x-0 bottom-0 top-0 z-50 flex flex-col bg-white max-w-lg mx-auto sm:top-8 sm:bottom-8 sm:rounded-3xl sm:shadow-2xl overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0 bg-white">
+          <div>
+            <h2 className="text-lg font-black text-slate-900">
+              Avaliações ({reviewCount >= 1000
+                ? `${(reviewCount / 1000).toFixed(1).replace('.', ',')} mil`
+                : reviewCount.toLocaleString('pt-MZ')})
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors"
+            aria-label="Fechar avaliações"
+          >
+            <ChevronDown className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="px-5 pt-5 space-y-5">
+
+            {/* Rating summary */}
+            <div className="flex gap-5 items-center">
+              <div className="flex flex-col items-center shrink-0">
+                <span className="text-5xl font-black text-slate-900 tabular-nums leading-none">
+                  {rating.toFixed(1)}
+                </span>
+                <div className="flex items-center gap-0.5 mt-1.5">
+                  {[1,2,3,4,5].map((i) => (
+                    <Star key={i} className={`w-4 h-4 ${i <= Math.round(rating) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
+                  ))}
+                </div>
+                <span className="text-[11px] font-semibold text-slate-400 mt-1">
+                  {reviewCount.toLocaleString('pt-MZ')} notas
+                </span>
+              </div>
+
+              <div className="flex-1 flex flex-col gap-1.5">
+                {distribution.map((d) => (
+                  <button
+                    key={d.stars}
+                    onClick={() => setFilterStars(filterStars === d.stars ? null : d.stars)}
+                    className={`flex items-center gap-2 w-full group rounded-full px-1 py-0.5 transition-colors ${filterStars === d.stars ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
+                  >
+                    <span className="text-[11px] font-bold text-slate-500 w-2.5 tabular-nums">{d.stars}</span>
+                    <Star className="w-3 h-3 fill-slate-300 text-slate-300 shrink-0" />
+                    <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-slate-900 transition-all duration-700"
+                        style={{ width: `${d.percent}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-400 w-7 text-right tabular-nums">
+                      {d.percent}%
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Filtros de estrelas */}
+            {filterStars && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500">Filtrar por:</span>
+                <button
+                  onClick={() => setFilterStars(null)}
+                  className="flex items-center gap-1.5 bg-slate-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-full"
+                >
+                  {filterStars} estrela{filterStars !== 1 ? 's' : ''}
+                  <span className="text-white/60">×</span>
+                </button>
+              </div>
+            )}
+
+            {/* Search */}
+            {reviews.length > 0 && (
+              <div className="relative">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setVisibleCount(8); }}
+                  placeholder="Pesquisar avaliações..."
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-full text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:bg-white transition-colors"
+                />
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            )}
+
+            {/* Reviews list */}
+            <div className="space-y-3 pb-8">
+              {visible.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-slate-400 text-sm font-medium">Nenhuma avaliação encontrada</p>
+                </div>
+              ) : (
+                <>
+                  {visible.map((r) => (
+                    <DrawerReviewCard key={r.id} review={r} />
+                  ))}
+
+                  {hasMore && (
+                    <button
+                      onClick={() => setVisibleCount((n) => n + 8)}
+                      className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                    >
+                      Ver mais avaliações
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function DrawerReviewCard({ review }: { review: Review }) {
+  const [helpful, setHelpful] = useState(false);
+  const initials = review.author
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const formattedDate = new Date(review.date).toLocaleDateString('pt-MZ', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl p-4 space-y-3 shadow-[0_1px_8px_rgb(0,0,0,0.04)]">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-slate-900 text-white shrink-0 flex items-center justify-center text-[11px] font-black tracking-tight">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-[13px] font-bold text-slate-900 truncate">{review.author}</p>
+              {review.verified && <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">{formattedDate}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          {[1,2,3,4,5].map((i) => (
+            <Star key={i} className={`w-3.5 h-3.5 ${i <= Math.round(review.rating) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
+          ))}
+        </div>
+      </div>
+
+      <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
+        {review.text}
+      </p>
+
+      <div className="flex items-center justify-between pt-1 border-t border-slate-50">
+        {review.size ? (
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Tamanho {review.size}
+          </span>
+        ) : <span />}
+        <button
+          onClick={() => setHelpful((v) => !v)}
+          className={`flex items-center gap-1.5 text-[11px] font-semibold transition-colors ${
+            helpful ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <ThumbsUp className={`w-3.5 h-3.5 ${helpful ? 'fill-slate-900' : ''}`} />
+          Útil {(review.helpfulCount ?? 0) + (helpful ? 1 : 0)}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ─── Reviews / Avaliações ───────────────────────────────────────── */
 function ReviewStars({ rating, size = 'w-3.5 h-3.5' }: { rating: number; size?: string }) {
@@ -537,21 +795,18 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
-function ReviewsSection({ product }: { product: Product }) {
-  const [expanded, setExpanded] = useState(false);
+function ReviewsSection({ product, onOpenDrawer }: { product: Product; onOpenDrawer: () => void }) {
   const reviews = product.reviews ?? [];
   const rating = product.rating ?? 0;
   const reviewCount = product.reviewCount ?? reviews.length;
 
   if (reviewCount === 0 && reviews.length === 0) return null;
 
-  // Distribuição de estrelas — usa as reviews reais quando existem, com fallback estimado a partir da média.
   const distribution = [5, 4, 3, 2, 1].map((stars) => {
     if (reviews.length > 0) {
       const count = reviews.filter((r) => Math.round(r.rating) === stars).length;
       return { stars, percent: Math.round((count / reviews.length) * 100) };
     }
-    // Fallback: curva plausível centrada na média quando não há reviews individuais.
     const distance = Math.abs(stars - rating);
     const weight = Math.max(0, 5 - distance * 3.2);
     return { stars, percent: Math.round(weight * 14) };
@@ -562,14 +817,17 @@ function ReviewsSection({ product }: { product: Product }) {
     percent: Math.round((d.percent / maxPercent) * 100),
   }));
 
-  const visibleReviews = expanded ? reviews : reviews.slice(0, 4);
+  const previewReviews = reviews.slice(0, 2);
 
   return (
     <div className="space-y-4">
       <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Avaliações</span>
 
-      {/* Resumo: nota + distribuição */}
-      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 flex flex-col sm:flex-row gap-5 sm:gap-8">
+      {/* Resumo clicável: nota + distribuição */}
+      <button
+        onClick={onOpenDrawer}
+        className="w-full text-left rounded-2xl border border-slate-100 bg-slate-50 p-4 flex flex-col sm:flex-row gap-5 sm:gap-8 hover:bg-slate-100 transition-colors active:scale-[0.99]"
+      >
         <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-1.5 shrink-0">
           <span className="text-4xl font-black text-slate-900 tracking-tight tabular-nums">
             {rating.toFixed(1)}
@@ -587,27 +845,26 @@ function ReviewsSection({ product }: { product: Product }) {
             <RatingBar key={d.stars} stars={d.stars} percent={d.percent} />
           ))}
         </div>
-      </div>
+      </button>
 
-      {/* Cards de avaliação */}
-      {reviews.length > 0 && (
-        <>
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible">
-            {visibleReviews.map((r) => (
-              <ReviewCard key={r.id} review={r} />
-            ))}
-          </div>
+      {/* Preview: 2 avaliações em carrossel */}
+      {previewReviews.length > 0 && (
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible">
+          {previewReviews.map((r) => (
+            <ReviewCard key={r.id} review={r} />
+          ))}
+        </div>
+      )}
 
-          {reviews.length > 4 && (
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
-            >
-              {expanded ? 'Ver menos avaliações' : 'Ler mais avaliações'}
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-            </button>
-          )}
-        </>
+      {/* Botão "Ver todas avaliações" */}
+      {reviewCount > 0 && (
+        <button
+          onClick={onOpenDrawer}
+          className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+        >
+          Ver todas as avaliações
+          <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
+        </button>
       )}
     </div>
   );
