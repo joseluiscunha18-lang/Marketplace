@@ -184,6 +184,17 @@ function StoreGroup({
           {subtotal.toLocaleString('pt-MZ')} MT
         </span>
       </div>
+
+      {/* Per-store checkout button */}
+      <div className="px-4 pb-4 pt-1">
+        <Link
+          href={`/checkout/${storeSlug}`}
+          className="w-full py-3.5 flex items-center justify-center rounded-full font-black text-[14px] text-white active:scale-[0.98] transition-transform"
+          style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
+        >
+          Continuar para a finalização da compra
+        </Link>
+      </div>
     </div>
   );
 }
@@ -372,17 +383,6 @@ export const CarrinhoClient = () => {
         </div>
       )}
 
-      {/* Sticky checkout bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
-        <Link
-          href="/checkout"
-          className="w-full py-4 flex items-center justify-between px-6 rounded-full font-black text-[15px] text-white shadow-xl"
-          style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
-        >
-          <span>Finalizar Compra</span>
-          <span className="text-indigo-200 font-black">{totalPrice.toLocaleString('pt-MZ')} MT</span>
-        </Link>
-      </div>
     </div>
   );
 };
