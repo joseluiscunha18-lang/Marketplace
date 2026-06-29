@@ -302,16 +302,7 @@ export const CarrinhoClient = () => {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-36 space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <button
-          onClick={() => router.back()}
-          className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 active:scale-90 transition-transform"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <h1 className="text-[20px] font-black text-slate-900 flex-1">
-          Carrinho
-        </h1>
+      <div className="flex items-center justify-end mb-2">
         <span
           className="text-[13px] font-bold text-slate-500 transition-all"
           style={{ transform: flyAnim ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.3s ease' }}
