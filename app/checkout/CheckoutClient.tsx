@@ -1,170 +1,344 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { MessageSquare, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import {
+  ArrowLeft, MessageSquare, ShieldCheck, Star,
+  User, Phone, MapPin, FileText, ChevronRight, Check,
+} from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { MOCK_STORES } from '@/data/mockStores';
+import type { CartItem } from '@/types';
 
 export const CheckoutClient = () => {
   const router = useRouter();
-  const { cart, totalPrice, clearCart } = useCart();
+  const searchParams = useSearchParams();
+  const isBuyNow = searchParams.get('buynow') === '1';
+
+  const { cart, removeFromCart, clearCart } = useCart();
   const { addOrderToHistory, updateUserInfo, userInfo } = useUser();
+
+  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
   const [name, setName] = useState(userInfo?.name || '');
   const [phone, setPhone] = useState(userInfo?.phone || '');
   const [address, setAddress] = useState(userInfo?.location || '');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
 
-  if (cart.length === 0) {
+  // Load buy-now item from sessionStorage
+  useEffect(() => {
+    if (isBuyNow) {
+      try {
+        const raw = sessionStorage.getItem('shopyump_buynow');
+        if (raw) setBuyNowItem(JSON.parse(raw));
+      } catch { /* ignore */ }
+    }
+  }, [isBuyNow]);
+
+  // Items to show in this checkout
+  const items: CartItem[] = isBuyNow
+    ? buyNowItem ? [buyNowItem] : []
+    : cart;
+
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+
+  // Determine which store this order goes to
+  const storeSlug = items[0]?.storeSlug;
+  const store = MOCK_STORES.find((s) => s.slug === storeSlug);
+  const storeName = store?.name ?? items[0]?.storeName ?? '';
+  const storePhone = store?.whatsapp ?? '258840000000';
+  const storeInitials = storeName.slice(0, 2).toUpperCase();
+
+  // Empty state
+  if (!isBuyNow && cart.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto py-24 px-4 text-center space-y-4">
-        <ShoppingBag className="w-16 h-16 text-slate-300 mx-auto" />
-        <h2 className="text-2xl font-black text-slate-900">Seu carrinho está vazio</h2>
-        <p className="text-sm text-slate-500">Adicione produtos de uma loja local para finalizar o pedido.</p>
-        <Link href="/produtos" className="px-6 py-3 bg-slate-900 text-white font-bold text-xs rounded-full inline-block">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center pb-24">
+        <p className="text-slate-500 font-semibold">Não há itens no carrinho.</p>
+        <button
+          onClick={() => router.push('/produtos')}
+          className="px-6 py-3 bg-slate-900 text-white rounded-full font-black text-sm"
+        >
           Explorar Produtos
-        </Link>
+        </button>
       </div>
     );
   }
 
-  const firstStoreSlug = cart[0].storeSlug;
-  const store = MOCK_STORES.find(s => s.slug === firstStoreSlug);
-  const targetPhone = store ? store.whatsapp : '258840000000';
-  const targetStoreName = store ? store.name : cart[0].storeName;
+  if (isBuyNow && !buyNowItem) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center pb-24">
+        <p className="text-slate-500 font-semibold">Produto não encontrado.</p>
+        <button
+          onClick={() => router.push('/produtos')}
+          className="px-6 py-3 bg-slate-900 text-white rounded-full font-black text-sm"
+        >
+          Explorar Produtos
+        </button>
+      </div>
+    );
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSend = () => {
     if (!name.trim() || !phone.trim() || phone.trim().length < 8) {
-      setError('Por favor preencha o seu nome e um número de telefone válido em Moçambique.');
+      setError('Por favor preencha o seu nome e um número de telefone válido.');
       return;
     }
     setError('');
 
-    const itemsFormatted = cart
-      .map(item => {
-        const vars = [];
+    const itemsFormatted = items
+      .map((item) => {
+        const vars: string[] = [];
         if (item.selectedSize) vars.push(`Tam: ${item.selectedSize}`);
         if (item.selectedColor) vars.push(`Cor: ${item.selectedColor}`);
         return `• ${item.quantity}x ${item.name}${vars.length ? ` (${vars.join(', ')})` : ''} — ${(item.price * item.quantity).toLocaleString('pt-MZ')} MT`;
       })
       .join('\n');
 
-    let msg = `Olá *${targetStoreName}*!\nGostaria de finalizar a minha encomenda no Shopyump.\n\n`;
+    let msg = `Olá *${storeName}*! 👋\nGostaria de finalizar a minha encomenda pelo Shopyump.\n\n`;
     msg += `📦 *PEDIDO*\n${itemsFormatted}\n\n`;
-    msg += `💰 *Total: ${totalPrice.toLocaleString('pt-MZ')} MT*\n\n`;
-    msg += `👤 *DADOS DE ENTREGA*\n• Nome: ${name.trim()}\n• Contacto: ${phone.trim()}\n`;
+    msg += `💰 *Total: ${subtotal.toLocaleString('pt-MZ')} MT*\n\n`;
+    msg += `👤 *OS MEUS DADOS*\n• Nome: ${name.trim()}\n• Telefone: ${phone.trim()}\n`;
     if (address.trim()) msg += `• Endereço: ${address.trim()}\n`;
-    if (notes.trim()) msg += `• Observações: ${notes.trim()}\n`;
-    msg += `\n🔗 Link gerado via Shopyump Moz`;
+    if (notes.trim()) msg += `• Nota: ${notes.trim()}\n`;
+    msg += `\n🔗 Pedido gerado via Shopyump Moz`;
 
-    const url = `https://wa.me/${targetPhone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
-    
-    // Save to history and update info
-    addOrderToHistory(cart, targetStoreName);
+    const waUrl = `https://wa.me/${storePhone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+
+    addOrderToHistory(items, storeName);
     updateUserInfo({ name: name.trim(), phone: phone.trim(), location: address.trim() });
-    
-    window.open(url, '_blank');
-    clearCart();
-    router.push('/conta');
+
+    if (isBuyNow) {
+      sessionStorage.removeItem('shopyump_buynow');
+    } else {
+      // Remove only items from this store
+      const indexes = cart
+        .map((item, i) => (item.storeSlug === storeSlug ? i : -1))
+        .filter((i) => i !== -1)
+        .reverse();
+      indexes.forEach((i) => removeFromCart(i));
+    }
+
+    setSent(true);
+    setTimeout(() => {
+      window.open(waUrl, '_blank');
+      router.push('/produtos');
+    }, 800);
   };
 
+  if (sent) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-5 px-6 text-center pb-24">
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center shadow-xl"
+          style={{ background: 'linear-gradient(135deg,#25D366,#128C7E)' }}
+        >
+          <Check className="w-10 h-10 text-white" strokeWidth={3} />
+        </div>
+        <div>
+          <h2 className="text-xl font-black text-slate-900">Pedido enviado!</h2>
+          <p className="text-sm text-slate-500 mt-1">A abrir o WhatsApp de <strong>{storeName}</strong>…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 pb-24">
-      <Link href="/produtos" className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 mb-6">
-        <ArrowLeft className="w-4 h-4" /> Voltar a comprar
-      </Link>
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-36 space-y-5">
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        {/* FORM */}
-        <div className="md:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-xl space-y-6">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Checkout Directo</span>
-            <h1 className="text-2xl font-black text-slate-900 mt-2">Detalhes de Envio</h1>
-            <p className="text-xs text-slate-500 mt-1">Nenhum registo necessário. Pedido finalizado por WhatsApp.</p>
-          </div>
+      {/* Back */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 active:scale-90 transition-transform"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <h1 className="text-[18px] font-black text-slate-900">Finalizar Pedido</h1>
+      </div>
 
-          {error && (
-            <div className="p-3.5 rounded-2xl bg-red-50 text-red-600 text-xs font-bold border border-red-200">
-              ⚠️ {error}
+      {/* Store identity */}
+      <button
+        onClick={() => router.push(`/loja/${storeSlug}`)}
+        className="w-full flex items-center gap-3 p-4 bg-white rounded-3xl border border-slate-100 shadow-sm hover:bg-slate-50 transition-colors text-left"
+      >
+        <div className="relative w-12 h-12 rounded-full bg-slate-900 shrink-0 overflow-hidden shadow">
+          {store?.logo ? (
+            <Image src={store.logo} alt={storeName} fill className="object-cover" sizes="48px" />
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center text-white font-black text-sm">
+              {storeInitials}
+            </span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-black text-[15px] text-slate-900">{storeName}</p>
+          {store?.rating && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <span className="text-[12px] font-bold text-slate-500">{store.rating.toFixed(1)} · Loja verificada ✓</span>
             </div>
           )}
+        </div>
+        <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+      </button>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {[
-              { label: 'Seu Nome Completo *', value: name, setter: setName, placeholder: 'Ex: José Luís Cunha', type: 'text' },
-              { label: 'Telefone / WhatsApp Moçambique *', value: phone, setter: setPhone, placeholder: 'Ex: 84 123 4567', type: 'tel' },
-              { label: 'Endereço de Entrega', value: address, setter: setAddress, placeholder: 'Ex: Bairro Central, Av. 24 de Julho nº 100', type: 'text' },
-            ].map(({ label, value, setter, placeholder, type }) => (
-              <div key={label}>
-                <label className="block text-xs font-extrabold text-slate-700 mb-1">{label}</label>
-                <input
-                  type={type}
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                  placeholder={placeholder}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-900 outline-none focus:bg-white focus:border-slate-900 transition-colors"
-                />
+      {/* Order summary */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-[12px] font-black uppercase tracking-wider text-slate-400 mb-3">
+            Resumo do pedido · {totalQty} {totalQty === 1 ? 'item' : 'itens'}
+          </p>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {items.map((item, i) => (
+            <div key={i} className="flex gap-3 px-4 py-3">
+              <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                <Image src={item.image} alt={item.name} fill className="object-cover" sizes="56px" />
               </div>
-            ))}
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-[13px] text-slate-900 line-clamp-1">{item.name}</p>
+                {(item.selectedSize || item.selectedColor) && (
+                  <p className="text-[11px] text-slate-400 font-semibold mt-0.5">
+                    {[item.selectedSize, item.selectedColor].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[12px] text-slate-500 font-semibold">Qtd: {item.quantity}</span>
+                  <span className="text-[13px] font-black text-slate-900">
+                    {(item.price * item.quantity).toLocaleString('pt-MZ')} MT
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/60 flex justify-between items-center">
+          <span className="text-[13px] font-bold text-slate-500">Total</span>
+          <span className="text-[16px] font-black text-slate-900">{subtotal.toLocaleString('pt-MZ')} MT</span>
+        </div>
+      </div>
 
-            <div>
-              <label className="block text-xs font-extrabold text-slate-700 mb-1">Nota para o vendedor (Opcional)</label>
+      {/* WhatsApp info banner */}
+      <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: '#25D366' }}
+        >
+          <MessageSquare className="w-4 h-4 text-white fill-white" />
+        </div>
+        <div>
+          <p className="text-[13px] font-black text-emerald-900">Pedido via WhatsApp</p>
+          <p className="text-[12px] text-emerald-700 font-medium mt-0.5">
+            Após preencher os seus dados, será redirecionado para o WhatsApp de <strong>{storeName}</strong> com o pedido já formatado.
+          </p>
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-[12px] font-black uppercase tracking-wider text-slate-400">Os seus dados</p>
+        </div>
+
+        {error && (
+          <div className="mx-4 mb-2 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-600 text-[12px] font-bold">
+            ⚠️ {error}
+          </div>
+        )}
+
+        <div className="divide-y divide-slate-100">
+          {/* Name */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <User className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="flex-1">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                Nome completo *
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: José Luís Cunha"
+                className="w-full text-[14px] font-semibold text-slate-900 outline-none placeholder:text-slate-300 bg-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Phone */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="flex-1">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                Telefone / WhatsApp *
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Ex: 84 123 4567"
+                className="w-full text-[14px] font-semibold text-slate-900 outline-none placeholder:text-slate-300 bg-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="flex-1">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                Localização actual <span className="font-medium normal-case tracking-normal">(opcional)</span>
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Ex: Av. 24 de Julho, Maputo"
+                className="w-full text-[14px] font-semibold text-slate-900 outline-none placeholder:text-slate-300 bg-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="flex items-start gap-3 px-4 py-3.5">
+            <FileText className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                Nota para a loja <span className="font-medium normal-case tracking-normal">(opcional)</span>
+              </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                placeholder="Ex: Entregar apenas no período da tarde..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-900 outline-none focus:bg-white focus:border-slate-900 transition-colors resize-none"
+                placeholder="Ex: Entregar de tarde, tocar a campainha…"
+                className="w-full text-[14px] font-semibold text-slate-900 outline-none placeholder:text-slate-300 bg-transparent resize-none"
               />
             </div>
-
-            <div className="pt-4">
-              <button
-                type="submit"
-                className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full font-black text-sm uppercase tracking-wide shadow-xl flex items-center justify-center gap-2"
-              >
-                <MessageSquare className="w-5 h-5 fill-white" /> Enviar Pedido para o WhatsApp
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* ORDER SUMMARY */}
-        <div className="md:col-span-5 space-y-4">
-          <div className="bg-slate-900 text-white p-6 rounded-3xl space-y-4 shadow-xl">
-            <h3 className="font-black text-base border-b border-slate-800 pb-3 flex items-center justify-between">
-              <span>Resumo • {targetStoreName}</span>
-              <span className="text-xs font-normal text-slate-400">{cart.length} itens</span>
-            </h3>
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-              {cart.map((item, i) => (
-                <div key={i} className="flex justify-between items-center text-xs pb-2 border-b border-slate-800/60 last:border-0">
-                  <div className="truncate pr-2">
-                    <span className="font-bold text-slate-200">{item.quantity}x {item.name}</span>
-                    {(item.selectedSize || item.selectedColor) && (
-                      <p className="text-[10px] text-slate-400">{item.selectedSize} {item.selectedColor}</p>
-                    )}
-                  </div>
-                  <span className="font-black shrink-0">{(item.price * item.quantity).toLocaleString('pt-MZ')} MT</span>
-                </div>
-              ))}
-            </div>
-            <div className="pt-3 border-t border-slate-800 space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-400 font-medium"><span>Subtotal</span><span>{totalPrice.toLocaleString('pt-MZ')} MT</span></div>
-              <div className="flex justify-between text-slate-400 font-medium"><span>Entrega em Maputo/MZ</span><span className="text-amber-300 font-bold">A combinar</span></div>
-              <div className="flex justify-between text-base font-black text-white pt-2 border-t border-slate-800"><span>Total estimado</span><span>{totalPrice.toLocaleString('pt-MZ')} MT</span></div>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-semibold">
-            <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600" />
-            <span>Pagamento 100% seguro combinado directamente no acto de entrega ou M-Pesa.</span>
           </div>
         </div>
+      </div>
+
+      {/* Security note */}
+      <div className="flex items-center gap-2 px-1">
+        <ShieldCheck className="w-4 h-4 text-slate-400 shrink-0" />
+        <p className="text-[11px] text-slate-400 font-medium">
+          Pagamento combinado directamente com a loja — na entrega ou via M-Pesa.
+        </p>
+      </div>
+
+      {/* Sticky send button */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+        <button
+          onClick={handleSend}
+          className="w-full py-4 flex items-center justify-center gap-2.5 rounded-full font-black text-[15px] text-white shadow-xl active:scale-[0.98] transition-transform"
+          style={{ background: 'linear-gradient(135deg,#25D366,#128C7E)' }}
+        >
+          <MessageSquare className="w-5 h-5 fill-white" />
+          Enviar pedido para o WhatsApp
+        </button>
       </div>
     </div>
   );
