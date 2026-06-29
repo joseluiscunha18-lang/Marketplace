@@ -1,11 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { CartItem, Product } from '@/types';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, selectedSize?: string, selectedColor?: string) => void;
+  addToCart: (product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect) => void;
   removeFromCart: (index: number) => void;
   updateQuantity: (index: number, quantity: number) => void;
   clearCart: () => void;
@@ -13,6 +13,8 @@ interface CartContextType {
   setIsCartOpen: (open: boolean) => void;
   totalItems: number;
   totalPrice: number;
+  cartAnimating: boolean;
+  flyingImage: { src: string; rect: DOMRect } | null;
 }
 
 const defaultContext: CartContextType = {
@@ -25,6 +27,8 @@ const defaultContext: CartContextType = {
   setIsCartOpen: () => {},
   totalItems: 0,
   totalPrice: 0,
+  cartAnimating: false,
+  flyingImage: null,
 };
 
 const CartContext = createContext<CartContextType>(defaultContext);
@@ -33,8 +37,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [cartAnimating, setCartAnimating] = useState(false);
+  const [flyingImage, setFlyingImage] = useState<{ src: string; rect: DOMRect } | null>(null);
 
-  // Hydrate from localStorage only on client
   useEffect(() => {
     try {
       const saved = localStorage.getItem('shopyump_cart');
@@ -54,7 +59,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart, mounted]);
 
-  const addToCart = (product: Product, selectedSize?: string, selectedColor?: string) => {
+  const addToCart = useCallback((product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect) => {
+    // Trigger fly animation
+    if (imageRect && product.image) {
+      setFlyingImage({ src: product.image, rect: imageRect });
+      setTimeout(() => {
+        setFlyingImage(null);
+        setCartAnimating(true);
+        setTimeout(() => setCartAnimating(false), 600);
+      }, 800);
+    } else {
+      setCartAnimating(true);
+      setTimeout(() => setCartAnimating(false), 600);
+    }
+
     setCart((prev) => {
       const existingIndex = prev.findIndex(
         (item) =>
@@ -69,8 +87,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, { ...product, quantity: 1, selectedSize, selectedColor }];
     });
-    setIsCartOpen(true);
-  };
+  }, []);
 
   const removeFromCart = (index: number) => setCart((prev) => prev.filter((_, i) => i !== index));
 
@@ -89,7 +106,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, totalItems, totalPrice }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, totalItems, totalPrice, cartAnimating, flyingImage }}>
       {children}
     </CartContext.Provider>
   );
