@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -12,12 +12,13 @@ import { useUser } from '@/context/UserContext';
 import { MOCK_STORES } from '@/data/mockStores';
 import type { CartItem } from '@/types';
 
-export const CheckoutClient = () => {
+// Componente interno que usa useSearchParams
+const CheckoutInner = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isBuyNow = searchParams.get('buynow') === '1';
 
-  const { cart, removeFromCart, clearCart } = useCart();
+  const { cart, removeFromCart } = useCart();
   const { addOrderToHistory, updateUserInfo, userInfo } = useUser();
 
   const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
@@ -28,7 +29,6 @@ export const CheckoutClient = () => {
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
 
-  // Load buy-now item from sessionStorage
   useEffect(() => {
     if (isBuyNow) {
       try {
@@ -38,7 +38,6 @@ export const CheckoutClient = () => {
     }
   }, [isBuyNow]);
 
-  // Items to show in this checkout
   const items: CartItem[] = isBuyNow
     ? buyNowItem ? [buyNowItem] : []
     : cart;
@@ -46,14 +45,12 @@ export const CheckoutClient = () => {
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
 
-  // Determine which store this order goes to
   const storeSlug = items[0]?.storeSlug;
   const store = MOCK_STORES.find((s) => s.slug === storeSlug);
   const storeName = store?.name ?? items[0]?.storeName ?? '';
   const storePhone = store?.whatsapp ?? '258840000000';
   const storeInitials = storeName.slice(0, 2).toUpperCase();
 
-  // Empty state
   if (!isBuyNow && cart.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center pb-24">
@@ -114,7 +111,6 @@ export const CheckoutClient = () => {
     if (isBuyNow) {
       sessionStorage.removeItem('shopyump_buynow');
     } else {
-      // Remove only items from this store
       const indexes = cart
         .map((item, i) => (item.storeSlug === storeSlug ? i : -1))
         .filter((i) => i !== -1)
@@ -149,7 +145,6 @@ export const CheckoutClient = () => {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-36 space-y-5">
 
-      {/* Back */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.back()}
@@ -160,7 +155,6 @@ export const CheckoutClient = () => {
         <h1 className="text-[18px] font-black text-slate-900">Finalizar Pedido</h1>
       </div>
 
-      {/* Store identity */}
       <button
         onClick={() => router.push(`/loja/${storeSlug}`)}
         className="w-full flex items-center gap-3 p-4 bg-white rounded-3xl border border-slate-100 shadow-sm hover:bg-slate-50 transition-colors text-left"
@@ -186,7 +180,6 @@ export const CheckoutClient = () => {
         <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
       </button>
 
-      {/* Order summary */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="px-4 pt-4 pb-2">
           <p className="text-[12px] font-black uppercase tracking-wider text-slate-400 mb-3">
@@ -222,7 +215,6 @@ export const CheckoutClient = () => {
         </div>
       </div>
 
-      {/* WhatsApp info banner */}
       <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
@@ -238,7 +230,6 @@ export const CheckoutClient = () => {
         </div>
       </div>
 
-      {/* Form */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="px-4 pt-4 pb-2">
           <p className="text-[12px] font-black uppercase tracking-wider text-slate-400">Os seus dados</p>
@@ -251,13 +242,10 @@ export const CheckoutClient = () => {
         )}
 
         <div className="divide-y divide-slate-100">
-          {/* Name */}
           <div className="flex items-center gap-3 px-4 py-3.5">
             <User className="w-4 h-4 text-slate-400 shrink-0" />
             <div className="flex-1">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                Nome completo *
-              </label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Nome completo *</label>
               <input
                 type="text"
                 value={name}
@@ -268,13 +256,10 @@ export const CheckoutClient = () => {
             </div>
           </div>
 
-          {/* Phone */}
           <div className="flex items-center gap-3 px-4 py-3.5">
             <Phone className="w-4 h-4 text-slate-400 shrink-0" />
             <div className="flex-1">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                Telefone / WhatsApp *
-              </label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">Telefone / WhatsApp *</label>
               <input
                 type="tel"
                 value={phone}
@@ -285,7 +270,6 @@ export const CheckoutClient = () => {
             </div>
           </div>
 
-          {/* Address */}
           <div className="flex items-center gap-3 px-4 py-3.5">
             <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
             <div className="flex-1">
@@ -302,7 +286,6 @@ export const CheckoutClient = () => {
             </div>
           </div>
 
-          {/* Notes */}
           <div className="flex items-start gap-3 px-4 py-3.5">
             <FileText className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -321,7 +304,6 @@ export const CheckoutClient = () => {
         </div>
       </div>
 
-      {/* Security note */}
       <div className="flex items-center gap-2 px-1">
         <ShieldCheck className="w-4 h-4 text-slate-400 shrink-0" />
         <p className="text-[11px] text-slate-400 font-medium">
@@ -329,7 +311,6 @@ export const CheckoutClient = () => {
         </p>
       </div>
 
-      {/* Sticky send button */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
         <button
           onClick={handleSend}
@@ -343,3 +324,10 @@ export const CheckoutClient = () => {
     </div>
   );
 };
+
+// Wrapper com Suspense — obrigatório para useSearchParams no Next.js 15
+export const CheckoutClient = () => (
+  <Suspense>
+    <CheckoutInner />
+  </Suspense>
+);
