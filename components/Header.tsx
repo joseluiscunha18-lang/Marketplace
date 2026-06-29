@@ -13,8 +13,9 @@ export const Header = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  // Página de checkout por loja — sem distrações
+  // Páginas sem distrações
   if (pathname.startsWith('/checkout/') && pathname.split('/').length > 2) return null;
+  if (pathname === '/carrinho') return null;
 
   const isMarketplace = MARKETPLACE_ROUTES.some((r) => pathname.startsWith(r));
 
