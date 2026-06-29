@@ -73,6 +73,7 @@ export const ProductDetailClient = ({
  const router = useRouter();
  const { addToCart } = useCart();
  const { toggleFavorite, isFavorite } = useUser();
+ const imageContainerRef = useRef<HTMLDivElement | null>(null);
 
  const allImages = product.images && product.images.length > 0 ? product.images : [product.image];
  const [activeIndex, setActiveIndex] = useState(0);
@@ -121,7 +122,8 @@ export const ProductDetailClient = ({
  };
 
  const handleBuyNow = () => {
-   addToCart(product, selectedSize || undefined, selectedColor || undefined);
+   const rect = imageContainerRef.current?.getBoundingClientRect();
+   addToCart(product, selectedSize || undefined, selectedColor || undefined, rect);
    router.push('/checkout');
  };
 
@@ -162,7 +164,7 @@ export const ProductDetailClient = ({
            </div>
 
            <div className="relative w-full">
-             <div className="relative w-full aspect-square overflow-hidden bg-white lg:rounded-3xl lg:border lg:border-slate-100">
+             <div className="relative w-full aspect-square overflow-hidden bg-white lg:rounded-3xl lg:border lg:border-slate-100" ref={imageContainerRef}>
                <div
                  ref={scrollRef}
                  onScroll={handleScroll}
@@ -341,7 +343,10 @@ export const ProductDetailClient = ({
 
              <div className="space-y-3 pt-5 border-t border-slate-100">
                <button
-                 onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
+                 onClick={() => {
+                   const rect = imageContainerRef.current?.getBoundingClientRect();
+                   addToCart(product, selectedSize || undefined, selectedColor || undefined, rect);
+                 }}
                  className="w-full py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center active:scale-[0.98] transition-all"
                >
                  Adicionar ao Carrinho
