@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 
 // Rotas onde o padding extra para a BottomNav é necessário
-const MARKETPLACE_ROUTES = ['/produtos', '/lojas', '/promocoes', '/favoritos', '/conta', '/produto', '/loja'];
+const MARKETPLACE_ROUTES = ['/produtos', '/lojas', '/promocoes', '/favoritos', '/conta', '/produto', '/loja', '/carrinho', '/checkout'];
 
 export const MarketplaceShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
