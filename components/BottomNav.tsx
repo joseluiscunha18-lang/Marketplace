@@ -13,6 +13,9 @@ export const BottomNav = () => {
   const pathname = usePathname();
   const { totalItems, cartAnimating } = useCart();
 
+  // Página de checkout por loja — sem distrações
+  if (pathname.startsWith('/checkout/') && pathname.split('/').length > 2) return null;
+
   // Só renderiza nas páginas do marketplace
   const shouldShow = MARKETPLACE_ROUTES.some((route) => pathname.startsWith(route));
   if (!shouldShow) return null;
