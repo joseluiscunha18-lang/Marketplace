@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   Check, Share2, Heart, ChevronLeft, ChevronRight,
   MoreHorizontal, Star, Truck, RefreshCcw, Lock,
-  BadgeCheck, ThumbsUp, ChevronDown,
+  BadgeCheck, ThumbsUp, ChevronDown, X, SlidersHorizontal,
+  MessageSquareDashed,
 } from 'lucide-react';
 import type { Product, Store, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
@@ -26,9 +27,7 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
 
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
-      {/* Logo + nome + rating */}
       <Link href={`/loja/${product.storeSlug}`} className="flex items-center gap-3 min-w-0">
-        {/* Logo circular */}
         <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-900 shrink-0 shadow-sm">
           {store?.logo ? (
             <Image src={store.logo} alt={product.storeName} fill className="object-cover" sizes="44px" />
@@ -38,7 +37,6 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
             </span>
           )}
         </div>
-
         <div className="min-w-0">
           <p className="font-black text-[15px] text-slate-900 leading-tight truncate">{product.storeName}</p>
           {product.rating && reviewCount && (
@@ -50,8 +48,6 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
           )}
         </div>
       </Link>
-
-      {/* Visitar loja */}
       <Link
         href={`/loja/${product.storeSlug}`}
         className="ml-3 shrink-0 border border-slate-300 rounded-full px-4 py-1.5 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
@@ -89,7 +85,6 @@ export const ProductDetailClient = ({
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const isFav = isFavorite(product.id);
 
-  // Oculta o Header global nesta página (substituído pela StoreTopBar)
   useEffect(() => {
     const header = document.querySelector('header');
     if (header) header.style.display = 'none';
@@ -97,6 +92,24 @@ export const ProductDetailClient = ({
       if (header) header.style.display = '';
     };
   }, []);
+
+  // Hide/show bottom nav when reviews drawer is open
+  useEffect(() => {
+    const bottomNav = document.querySelector('nav[class*="fixed bottom-0"]') as HTMLElement | null;
+    if (!bottomNav) return;
+    if (reviewsOpen) {
+      bottomNav.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
+      bottomNav.style.transform = 'translateY(100%)';
+      bottomNav.style.opacity = '0';
+    } else {
+      bottomNav.style.transform = 'translateY(0)';
+      bottomNav.style.opacity = '1';
+    }
+    return () => {
+      bottomNav.style.transform = '';
+      bottomNav.style.opacity = '';
+    };
+  }, [reviewsOpen]);
 
   const productUrl = `https://shopyump.com/produto/${product.slug}`;
   const sizeLabel = getSizeLabel(product.sizes);
@@ -119,14 +132,12 @@ export const ProductDetailClient = ({
     if (el) {
       isProgrammaticScroll.current = true;
       el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' });
-      // Liberta o flag de scroll-sync após a animação terminar
       window.setTimeout(() => {
         isProgrammaticScroll.current = false;
       }, 400);
     }
   };
 
-  // Mantém activeIndex sincronizado enquanto o utilizador arrasta/desliza
   const handleScroll = () => {
     if (isProgrammaticScroll.current) return;
     const el = scrollRef.current;
@@ -139,7 +150,6 @@ export const ProductDetailClient = ({
 
   return (
     <div className="pb-24">
-      {/* Drawer global (abre ao clicar nas estrelas ou no botão de avaliações) */}
       <ReviewsDrawer product={product} open={reviewsOpen} onClose={() => setReviewsOpen(false)} />
 
       <div className="max-w-7xl mx-auto">
@@ -147,16 +157,12 @@ export const ProductDetailClient = ({
 
           {/* ── Gallery column ───────────────────────────────────── */}
           <div className="lg:col-span-7 space-y-0">
-
-            {/* Shop.app–style store bar — visible on mobile, above the image */}
             <div className="lg:hidden">
               <StoreTopBar product={product} store={store} />
             </div>
 
-            {/* Main image — fills the full 1:1, edge-to-edge on mobile */}
             <div className="relative w-full">
               <div className="relative w-full aspect-square overflow-hidden bg-slate-100 lg:rounded-3xl lg:border lg:border-slate-100">
-                {/* Scroller fluido — swipe nativo com inércia do navegador */}
                 <div
                   ref={scrollRef}
                   onScroll={handleScroll}
@@ -181,16 +187,13 @@ export const ProductDetailClient = ({
                   ))}
                 </div>
 
-                {/* Overlays — ficam fixos sobre o carrossel, não acompanham o scroll */}
                 <div className="absolute inset-0 pointer-events-none">
-                  {/* Counter badge */}
                   {allImages.length > 1 && (
                     <span className="absolute top-3 right-3 bg-black/45 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full z-10">
                       {activeIndex + 1} / {allImages.length}
                     </span>
                   )}
 
-                  {/* More options button (shop.app style) */}
                   <button
                     className="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-700 shadow-sm pointer-events-auto"
                     aria-label="Mais opções"
@@ -198,7 +201,6 @@ export const ProductDetailClient = ({
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
 
-                  {/* Desktop arrow buttons */}
                   {allImages.length > 1 && (
                     <>
                       <button
@@ -222,7 +224,6 @@ export const ProductDetailClient = ({
                 </div>
               </div>
 
-              {/* Dots */}
               {allImages.length > 1 && (
                 <div className="flex justify-center gap-2 mt-3 pb-1">
                   {allImages.map((_, i) => (
@@ -230,9 +231,7 @@ export const ProductDetailClient = ({
                       key={i}
                       onClick={() => goTo(i)}
                       className={`w-2 h-2 rounded-full transition-colors duration-300 shrink-0 ${
-                        i === activeIndex
-                          ? 'bg-slate-900'
-                          : 'bg-gray-300 hover:bg-gray-400'
+                        i === activeIndex ? 'bg-slate-900' : 'bg-gray-300 hover:bg-gray-400'
                       }`}
                       aria-label={`Ir para imagem ${i + 1}`}
                     />
@@ -245,13 +244,10 @@ export const ProductDetailClient = ({
           {/* ── Info column ──────────────────────────────────────── */}
           <div className="lg:col-span-5 space-y-6 flex flex-col justify-between px-4 lg:px-0 pt-5 lg:pt-0">
             <div className="space-y-6">
-
-              {/* Store bar — desktop only (inside info column) */}
               <div className="hidden lg:block">
                 <StoreTopBar product={product} store={store} />
               </div>
 
-              {/* Title, rating & price */}
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight flex-1">
@@ -262,7 +258,6 @@ export const ProductDetailClient = ({
                   </button>
                 </div>
 
-                {/* Stars inline — like shop.app */}
                 {product.rating && product.reviewCount && (
                   <div className="flex items-center gap-1 mt-2">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -280,14 +275,12 @@ export const ProductDetailClient = ({
                   </div>
                 )}
 
-                {/* Badge */}
                 {product.reviewCount && product.reviewCount > 200 && (
                   <span className="inline-block mt-2 bg-slate-100 text-slate-600 text-[11px] font-semibold px-3 py-1 rounded-full">
                     {Math.floor(product.reviewCount / 2)}+ comprados no mês passado
                   </span>
                 )}
 
-                {/* Price */}
                 <div className="flex items-baseline gap-3 mt-3">
                   <span className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">
                     {product.price.toLocaleString('pt-MZ')}
@@ -301,7 +294,6 @@ export const ProductDetailClient = ({
                 </div>
               </div>
 
-              {/* Variants */}
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 {product.sizes && product.sizes.length > 0 && (
                   <div className="space-y-2">
@@ -350,7 +342,6 @@ export const ProductDetailClient = ({
                 )}
               </div>
 
-              {/* Política de entrega, devolução e garantia */}
               <div className="pt-4 border-t border-slate-100">
                 <div className="rounded-2xl border border-slate-100 bg-slate-50 divide-y divide-slate-100 overflow-hidden">
                   <div className="flex items-start gap-3 p-3.5">
@@ -377,7 +368,6 @@ export const ProductDetailClient = ({
                 </div>
               </div>
 
-              {/* CTA Buttons — Adicionar ao carrinho, depois Comprar agora, depois Guardar / Partilhar */}
               <div className="space-y-3 pt-4 border-t border-slate-100">
                 <button
                   onClick={() => addToCart(product, selectedSize || undefined, selectedColor || undefined)}
@@ -418,13 +408,11 @@ export const ProductDetailClient = ({
                 </p>
               </div>
 
-              {/* Description */}
               <div className="space-y-2 pt-4 border-t border-slate-100">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Descrição do Produto</span>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">{product.description}</p>
               </div>
 
-              {/* Avaliações */}
               <div className="pt-4 border-t border-slate-100">
                 <ReviewsSection product={product} onOpenDrawer={() => setReviewsOpen(true)} />
               </div>
@@ -432,7 +420,6 @@ export const ProductDetailClient = ({
           </div>
         </div>
 
-        {/* ── Produtos relacionados ─────────────────────────────────── */}
         <div className="px-4 lg:px-4 mt-10 space-y-10">
           {relatedFromStore.length > 0 && (
             <RelatedSection
@@ -442,7 +429,6 @@ export const ProductDetailClient = ({
               products={relatedFromStore}
             />
           )}
-
           {relatedFromOthers.length > 0 && (
             <RelatedSection
               title="Também poderá gostar de"
@@ -457,7 +443,35 @@ export const ProductDetailClient = ({
   );
 };
 
-/* ─── Reviews Drawer (Etsy / shop.app style) ─────────────────────── */
+/* ─── Sort options type ──────────────────────────────────────────── */
+type SortOption = 'relevant' | 'recent' | 'oldest' | 'low_high' | 'high_low';
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'relevant', label: 'Mais relevantes' },
+  { value: 'recent', label: 'Mais recentes' },
+  { value: 'oldest', label: 'Mais antigos' },
+  { value: 'low_high', label: 'Classificação: baixa → alta' },
+  { value: 'high_low', label: 'Classificação: alta → baixa' },
+];
+
+function sortReviews(reviews: Review[], sort: SortOption): Review[] {
+  const arr = [...reviews];
+  switch (sort) {
+    case 'recent':
+      return arr.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    case 'oldest':
+      return arr.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    case 'low_high':
+      return arr.sort((a, b) => a.rating - b.rating);
+    case 'high_low':
+      return arr.sort((a, b) => b.rating - a.rating);
+    case 'relevant':
+    default:
+      return arr.sort((a, b) => (b.helpfulCount ?? 0) - (a.helpfulCount ?? 0));
+  }
+}
+
+/* ─── Reviews Drawer ─────────────────────────────────────────────── */
 function ReviewsDrawer({
   product,
   open,
@@ -470,20 +484,40 @@ function ReviewsDrawer({
   const reviews = product.reviews ?? [];
   const rating = product.rating ?? 0;
   const reviewCount = product.reviewCount ?? reviews.length;
+
   const [search, setSearch] = useState('');
   const [filterStars, setFilterStars] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(8);
+  const [sortBy, setSortBy] = useState<SortOption>('relevant');
+  const [showSortModal, setShowSortModal] = useState(false);
 
-  // Reset ao fechar
+  // Animation state
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      // Small delay so CSS transition fires
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true));
+      });
+    } else {
+      setVisible(false);
+      const timer = setTimeout(() => setMounted(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) {
       setSearch('');
       setFilterStars(null);
       setVisibleCount(8);
+      setShowSortModal(false);
     }
   }, [open]);
 
-  // Bloqueia scroll do body quando aberto
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -499,48 +533,101 @@ function ReviewsDrawer({
     return { stars, percent: Math.round(weight * 14), count: 0 };
   });
 
-  const filtered = reviews.filter((r) => {
-    const matchStars = filterStars === null || Math.round(r.rating) === filterStars;
-    const matchSearch =
-      search === '' ||
-      r.text.toLowerCase().includes(search.toLowerCase()) ||
-      r.author.toLowerCase().includes(search.toLowerCase());
-    return matchStars && matchSearch;
-  });
+  const filtered = sortReviews(
+    reviews.filter((r) => {
+      const matchStars = filterStars === null || Math.round(r.rating) === filterStars;
+      const matchSearch =
+        search === '' ||
+        r.text.toLowerCase().includes(search.toLowerCase()) ||
+        r.author.toLowerCase().includes(search.toLowerCase());
+      return matchStars && matchSearch;
+    }),
+    sortBy
+  );
 
-  const visible = filtered.slice(0, visibleCount);
-  const hasMore = visible.length < filtered.length;
+  const visible2 = filtered.slice(0, visibleCount);
+  const hasMore = visible2.length < filtered.length;
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? 'Ordenar';
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-40 backdrop-blur-[2px]"
+        className="fixed inset-0 z-40"
+        style={{
+          backgroundColor: `rgba(0,0,0,${visible ? 0.45 : 0})`,
+          backdropFilter: visible ? 'blur(2px)' : 'blur(0px)',
+          transition: 'background-color 0.35s ease, backdrop-filter 0.35s ease',
+        }}
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Drawer */}
-      <div className="fixed inset-x-0 bottom-0 top-0 z-50 flex flex-col bg-white max-w-lg mx-auto sm:top-8 sm:bottom-8 sm:rounded-3xl sm:shadow-2xl overflow-hidden">
-
+      <div
+        className="fixed inset-x-0 bottom-0 top-0 z-50 flex flex-col bg-white max-w-lg mx-auto sm:top-8 sm:bottom-8 sm:rounded-3xl sm:shadow-2xl overflow-hidden"
+        style={{
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          opacity: visible ? 1 : 0,
+          transition: 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease',
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0 bg-white">
-          <div>
-            <h2 className="text-lg font-black text-slate-900">
-              Avaliações ({reviewCount >= 1000
-                ? `${(reviewCount / 1000).toFixed(1).replace('.', ',')} mil`
-                : reviewCount.toLocaleString('pt-MZ')})
-            </h2>
-          </div>
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 shrink-0 bg-white">
+          {/* Close button — LEFT side */}
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors"
+            className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors shrink-0"
             aria-label="Fechar avaliações"
           >
-            <ChevronDown className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
+
+          <div className="flex-1 min-w-0">
+            <h2 className="text-[17px] font-black text-slate-900 leading-tight">
+              Avaliações{' '}
+              <span className="text-slate-400 font-semibold">
+                ({reviewCount >= 1000
+                  ? `${(reviewCount / 1000).toFixed(1).replace('.', ',')} mil`
+                  : reviewCount.toLocaleString('pt-MZ')})
+              </span>
+            </h2>
+          </div>
+        </div>
+
+        {/* Filter bar — Sort + Star chips */}
+        <div className="px-5 pt-4 pb-3 border-b border-slate-50 shrink-0 bg-white">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {/* Sort button */}
+            <button
+              onClick={() => setShowSortModal(true)}
+              className="flex items-center gap-1.5 shrink-0 bg-slate-900 text-white text-[12px] font-bold px-3.5 py-2 rounded-full transition-all active:scale-95"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              {currentSortLabel}
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-slate-200 shrink-0" />
+
+            {/* Star rating filter chips */}
+            {[5, 4, 3, 2, 1].map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilterStars(filterStars === s ? null : s)}
+                className={`flex items-center gap-1 shrink-0 text-[12px] font-bold px-3 py-2 rounded-full border transition-all active:scale-95 ${
+                  filterStars === s
+                    ? 'bg-amber-400 border-amber-400 text-white'
+                    : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                }`}
+              >
+                <Star className={`w-3 h-3 ${filterStars === s ? 'fill-white text-white' : 'fill-amber-400 text-amber-400'}`} />
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Scrollable content */}
@@ -586,20 +673,6 @@ function ReviewsDrawer({
               </div>
             </div>
 
-            {/* Filtros de estrelas */}
-            {filterStars && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500">Filtrar por:</span>
-                <button
-                  onClick={() => setFilterStars(null)}
-                  className="flex items-center gap-1.5 bg-slate-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-full"
-                >
-                  {filterStars} estrela{filterStars !== 1 ? 's' : ''}
-                  <span className="text-white/60">×</span>
-                </button>
-              </div>
-            )}
-
             {/* Search */}
             {reviews.length > 0 && (
               <div className="relative">
@@ -616,18 +689,43 @@ function ReviewsDrawer({
               </div>
             )}
 
-            {/* Reviews list */}
+            {/* Reviews list or empty states */}
             <div className="space-y-3 pb-8">
-              {visible.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-slate-400 text-sm font-medium">Nenhuma avaliação encontrada</p>
+              {reviews.length === 0 ? (
+                /* ── No reviews at all ── */
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                    <MessageSquareDashed className="w-8 h-8 text-slate-300" />
+                  </div>
+                  <p className="text-[15px] font-black text-slate-800 mb-1">Ainda sem avaliações</p>
+                  <p className="text-[13px] text-slate-400 font-medium leading-relaxed max-w-xs">
+                    Seja o primeiro a partilhar a sua experiência com este produto.
+                  </p>
+                </div>
+              ) : visible2.length === 0 ? (
+                /* ── No results for current filter/search ── */
+                <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+                    <Star className="w-7 h-7 text-slate-300" />
+                  </div>
+                  <p className="text-[14px] font-black text-slate-800 mb-1">Sem resultados</p>
+                  <p className="text-[12px] text-slate-400 font-medium">
+                    Tente ajustar os filtros ou a pesquisa.
+                  </p>
+                  {(filterStars !== null || search) && (
+                    <button
+                      onClick={() => { setFilterStars(null); setSearch(''); }}
+                      className="mt-4 text-[12px] font-bold text-slate-700 underline underline-offset-2"
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
-                  {visible.map((r) => (
+                  {visible2.map((r) => (
                     <DrawerReviewCard key={r.id} review={r} />
                   ))}
-
                   {hasMore && (
                     <button
                       onClick={() => setVisibleCount((n) => n + 8)}
@@ -643,6 +741,49 @@ function ReviewsDrawer({
           </div>
         </div>
       </div>
+
+      {/* Sort Modal */}
+      {showSortModal && (
+        <>
+          <div
+            className="fixed inset-0 z-[60]"
+            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+            onClick={() => setShowSortModal(false)}
+          />
+          <div className="fixed inset-x-0 bottom-0 z-[70] bg-white rounded-t-3xl shadow-2xl overflow-hidden max-w-lg mx-auto"
+            style={{ animation: 'slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }}
+          >
+            <style>{`@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+            <div className="px-5 pt-5 pb-2 flex items-center justify-between">
+              <h3 className="text-[16px] font-black text-slate-900">Ordenar por</h3>
+              <button
+                onClick={() => setShowSortModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-4 pb-8 space-y-1 mt-2">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setSortBy(opt.value); setShowSortModal(false); setVisibleCount(8); }}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-[14px] font-semibold transition-colors ${
+                    sortBy === opt.value
+                      ? 'bg-slate-900 text-white'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {opt.label}
+                  {sortBy === opt.value && (
+                    <Check className="w-4 h-4 text-white shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -800,8 +941,6 @@ function ReviewsSection({ product, onOpenDrawer }: { product: Product; onOpenDra
   const rating = product.rating ?? 0;
   const reviewCount = product.reviewCount ?? reviews.length;
 
-  if (reviewCount === 0 && reviews.length === 0) return null;
-
   const distribution = [5, 4, 3, 2, 1].map((stars) => {
     if (reviews.length > 0) {
       const count = reviews.filter((r) => Math.round(r.rating) === stars).length;
@@ -823,48 +962,59 @@ function ReviewsSection({ product, onOpenDrawer }: { product: Product; onOpenDra
     <div className="space-y-4">
       <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Avaliações</span>
 
-      {/* Resumo clicável: nota + distribuição */}
-      <button
-        onClick={onOpenDrawer}
-        className="w-full text-left rounded-2xl border border-slate-100 bg-slate-50 p-4 flex flex-col sm:flex-row gap-5 sm:gap-8 hover:bg-slate-100 transition-colors active:scale-[0.99]"
-      >
-        <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-1.5 shrink-0">
-          <span className="text-4xl font-black text-slate-900 tracking-tight tabular-nums">
-            {rating.toFixed(1)}
-          </span>
-          <div className="flex flex-col gap-1">
-            <ReviewStars rating={rating} size="w-4 h-4" />
-            <span className="text-[11px] font-semibold text-slate-500">
-              {reviewCount.toLocaleString('pt-MZ')} classificações
-            </span>
+      {reviewCount === 0 && reviews.length === 0 ? (
+        /* ── Empty state for product page (inline) ── */
+        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center mb-3">
+            <MessageSquareDashed className="w-6 h-6 text-slate-300" />
           </div>
+          <p className="text-[14px] font-black text-slate-700 mb-1">Ainda sem avaliações</p>
+          <p className="text-[12px] text-slate-400 font-medium leading-relaxed">
+            Este produto ainda não tem avaliações de clientes.
+          </p>
         </div>
+      ) : (
+        <>
+          {/* Resumo clicável */}
+          <button
+            onClick={onOpenDrawer}
+            className="w-full text-left rounded-2xl border border-slate-100 bg-slate-50 p-4 flex flex-col sm:flex-row gap-5 sm:gap-8 hover:bg-slate-100 transition-colors active:scale-[0.99]"
+          >
+            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-1.5 shrink-0">
+              <span className="text-4xl font-black text-slate-900 tracking-tight tabular-nums">
+                {rating.toFixed(1)}
+              </span>
+              <div className="flex flex-col gap-1">
+                <ReviewStars rating={rating} size="w-4 h-4" />
+                <span className="text-[11px] font-semibold text-slate-500">
+                  {reviewCount.toLocaleString('pt-MZ')} classificações
+                </span>
+              </div>
+            </div>
 
-        <div className="flex-1 flex flex-col gap-1.5 justify-center min-w-0">
-          {normalizedDistribution.map((d) => (
-            <RatingBar key={d.stars} stars={d.stars} percent={d.percent} />
-          ))}
-        </div>
-      </button>
+            <div className="flex-1 flex flex-col gap-1.5 justify-center min-w-0">
+              {normalizedDistribution.map((d) => (
+                <RatingBar key={d.stars} stars={d.stars} percent={d.percent} />
+              ))}
+            </div>
+          </button>
 
-      {/* Preview: 2 avaliações em carrossel */}
-      {previewReviews.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible">
-          {previewReviews.map((r) => (
-            <ReviewCard key={r.id} review={r} />
-          ))}
-        </div>
-      )}
+          {previewReviews.length > 0 && (
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible">
+              {previewReviews.map((r) => (
+                <ReviewCard key={r.id} review={r} />
+              ))}
+            </div>
+          )}
 
-      {/* Botão "Ver todas avaliações" */}
-      {reviewCount > 0 && (
-        <button
-          onClick={onOpenDrawer}
-          className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
-        >
-          Ver todas as avaliações
-          <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
-        </button>
+          <button
+            onClick={onOpenDrawer}
+            className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+          >
+            Ver todas as avaliações
+            <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
+          </button>
+        </>
       )}
     </div>
   );
