@@ -14,7 +14,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   // Páginas sem distrações
-  if (pathname.startsWith('/checkout/') && pathname.split('/').length > 2) return null;
+  if (pathname === '/checkout' || pathname.startsWith('/checkout/')) return null;
   if (pathname === '/carrinho') return null;
 
   const isMarketplace = MARKETPLACE_ROUTES.some((r) => pathname.startsWith(r));

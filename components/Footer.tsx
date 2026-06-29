@@ -9,7 +9,7 @@ export const Footer = () => {
   const pathname = usePathname();
 
   // Página de checkout por loja — sem distrações
-  if (pathname.startsWith('/checkout/') && pathname.split('/').length > 2) return null;
+  if (pathname === '/checkout' || pathname.startsWith('/checkout/')) return null;
 
   return (
     <footer className="bg-slate-900 text-slate-400 pt-16 pb-12 border-t border-slate-800">
