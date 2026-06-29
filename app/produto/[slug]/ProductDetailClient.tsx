@@ -9,7 +9,7 @@ import {
   Check, Share2, Heart, ChevronLeft, ChevronRight,
   MoreHorizontal, Star, Truck, RefreshCcw, Lock,
   BadgeCheck, ThumbsUp, ChevronDown, X, SlidersHorizontal,
-  MessageSquareDashed,
+  MessageSquareDashed, Flag,
 } from 'lucide-react';
 import type { Product, Store, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
@@ -83,6 +83,7 @@ export const ProductDetailClient = ({
   const isProgrammaticScroll = useRef(false);
 
   const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [reviewsOpenId, setReviewsOpenId] = useState<string | null>(null);
   const isFav = isFavorite(product.id);
 
   useEffect(() => {
@@ -150,7 +151,7 @@ export const ProductDetailClient = ({
 
   return (
     <div className="pb-24">
-      <ReviewsDrawer product={product} open={reviewsOpen} onClose={() => setReviewsOpen(false)} />
+      <ReviewsDrawer product={product} open={reviewsOpen} onClose={() => { setReviewsOpen(false); setReviewsOpenId(null); }} initialReviewId={reviewsOpenId} />
 
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-10 lg:px-4 sm:px-6 lg:py-8">
@@ -259,16 +260,24 @@ export const ProductDetailClient = ({
                 </div>
 
                 {product.rating && product.reviewCount && (
-                  <div className="flex items-center gap-1 mt-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${i < Math.round(product.rating!) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`}
-                      />
-                    ))}
+                  <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => setReviewsOpen(true)}
-                      className="ml-1 text-[13px] font-bold text-slate-600 underline underline-offset-2"
+                      className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 transition-colors rounded-full px-3 py-1.5 active:scale-95"
+                    >
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${i < Math.round(product.rating!) ? 'fill-amber-400 text-amber-400' : 'fill-slate-300 text-slate-300'}`}
+                        />
+                      ))}
+                      <span className="text-[12px] font-bold text-slate-700 ml-0.5">
+                        {product.rating.toFixed(1)}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setReviewsOpen(true)}
+                      className="text-[12px] font-semibold text-slate-500 underline underline-offset-2 hover:text-slate-800 transition-colors"
                     >
                       {product.reviewCount.toLocaleString('pt-MZ')} classificações
                     </button>
@@ -414,7 +423,7 @@ export const ProductDetailClient = ({
               </div>
 
               <div className="pt-4 border-t border-slate-100">
-                <ReviewsSection product={product} onOpenDrawer={() => setReviewsOpen(true)} />
+                <ReviewsSection product={product} onOpenDrawer={() => setReviewsOpen(true)} onOpenDrawerAtReview={(id) => { setReviewsOpenId(id); setReviewsOpen(true); }} />
               </div>
             </div>
           </div>
@@ -476,10 +485,12 @@ function ReviewsDrawer({
   product,
   open,
   onClose,
+  initialReviewId,
 }: {
   product: Product;
   open: boolean;
   onClose: () => void;
+  initialReviewId?: string | null;
 }) {
   const reviews = product.reviews ?? [];
   const rating = product.rating ?? 0;
@@ -490,6 +501,7 @@ function ReviewsDrawer({
   const [visibleCount, setVisibleCount] = useState(8);
   const [sortBy, setSortBy] = useState<SortOption>('relevant');
   const [showSortModal, setShowSortModal] = useState(false);
+  const scrollContentRef = useRef<HTMLDivElement | null>(null);
 
   // Animation state
   const [mounted, setMounted] = useState(false);
@@ -498,23 +510,38 @@ function ReviewsDrawer({
   useEffect(() => {
     if (open) {
       setMounted(true);
-      // Small delay so CSS transition fires
       requestAnimationFrame(() => {
         requestAnimationFrame(() => setVisible(true));
       });
     } else {
       setVisible(false);
-      const timer = setTimeout(() => setMounted(false), 400);
+      const timer = setTimeout(() => {
+        setMounted(false);
+        setShowSortModal(false);
+      }, 420);
       return () => clearTimeout(timer);
     }
   }, [open]);
+
+  // Scroll to specific review when opened with initialReviewId
+  useEffect(() => {
+    if (open && initialReviewId && scrollContentRef.current) {
+      const tryScroll = () => {
+        const el = document.getElementById(`review-${initialReviewId}`);
+        if (el && scrollContentRef.current) {
+          scrollContentRef.current.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' });
+        }
+      };
+      const t = setTimeout(tryScroll, 500);
+      return () => clearTimeout(t);
+    }
+  }, [open, initialReviewId]);
 
   useEffect(() => {
     if (!open) {
       setSearch('');
       setFilterStars(null);
       setVisibleCount(8);
-      setShowSortModal(false);
     }
   }, [open]);
 
@@ -631,7 +658,7 @@ function ReviewsDrawer({
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div ref={scrollContentRef} className="flex-1 overflow-y-auto overscroll-contain">
           <div className="px-5 pt-5 space-y-5">
 
             {/* Rating summary */}
@@ -790,6 +817,8 @@ function ReviewsDrawer({
 
 function DrawerReviewCard({ review }: { review: Review }) {
   const [helpful, setHelpful] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reported, setReported] = useState(false);
   const initials = review.author
     .split(' ')
     .map((w) => w[0])
@@ -804,7 +833,7 @@ function DrawerReviewCard({ review }: { review: Review }) {
   });
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl p-4 space-y-3 shadow-[0_1px_8px_rgb(0,0,0,0.04)]">
+    <div id={`review-${review.id}`} className="bg-white border border-slate-100 rounded-2xl p-4 space-y-3 shadow-[0_1px_8px_rgb(0,0,0,0.04)]">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-full bg-slate-900 text-white shrink-0 flex items-center justify-center text-[11px] font-black tracking-tight">
@@ -813,15 +842,41 @@ function DrawerReviewCard({ review }: { review: Review }) {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="text-[13px] font-bold text-slate-900 truncate">{review.author}</p>
-              {review.verified && <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+              {review.verified && <BadgeCheck className="w-3.5 h-3.5 text-slate-500 shrink-0" />}
             </div>
             <p className="text-[11px] text-slate-400 font-medium">{formattedDate}</p>
           </div>
         </div>
-        <div className="flex items-center gap-0.5 shrink-0">
-          {[1,2,3,4,5].map((i) => (
-            <Star key={i} className={`w-3.5 h-3.5 ${i <= Math.round(review.rating) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
-          ))}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-0.5">
+            {[1,2,3,4,5].map((i) => (
+              <Star key={i} className={`w-3.5 h-3.5 ${i <= Math.round(review.rating) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
+            ))}
+          </div>
+          {/* More options menu */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              aria-label="Mais opções"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+                <div className="absolute right-0 top-8 z-20 bg-white border border-slate-100 rounded-xl shadow-lg overflow-hidden min-w-[150px]">
+                  <button
+                    onClick={() => { setReported(true); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-3 text-[13px] font-semibold text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Flag className="w-3.5 h-3.5" />
+                    {reported ? 'Denunciado' : 'Denunciar'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -879,7 +934,7 @@ function RatingBar({ stars, percent }: { stars: number; percent: number }) {
   );
 }
 
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({ review, onOpen }: { review: Review; onOpen: () => void }) {
   const [helpful, setHelpful] = useState(false);
   const initials = review.author
     .split(' ')
@@ -895,7 +950,10 @@ function ReviewCard({ review }: { review: Review }) {
   });
 
   return (
-    <div className="w-[78%] sm:w-auto shrink-0 sm:shrink snap-start bg-white border border-slate-100 rounded-2xl p-4 flex flex-col gap-2.5 shadow-[0_2px_12px_rgb(0,0,0,0.03)]">
+    <button
+      onClick={onOpen}
+      className="w-[78%] sm:w-auto shrink-0 sm:shrink snap-start bg-white border border-slate-100 rounded-2xl p-4 flex flex-col gap-2.5 shadow-[0_2px_12px_rgb(0,0,0,0.03)] text-left active:scale-[0.98] transition-transform"
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-full bg-slate-900 text-white shrink-0 flex items-center justify-center text-[11px] font-black tracking-tight">
@@ -904,7 +962,7 @@ function ReviewCard({ review }: { review: Review }) {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
               <p className="text-[13px] font-bold text-slate-900 truncate">{review.author}</p>
-              {review.verified && <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+              {review.verified && <BadgeCheck className="w-3.5 h-3.5 text-slate-500 shrink-0" />}
             </div>
             <p className="text-[11px] text-slate-400 font-medium">{formattedDate}</p>
           </div>
@@ -922,21 +980,21 @@ function ReviewCard({ review }: { review: Review }) {
             Tamanho {review.size}
           </span>
         ) : <span />}
-        <button
-          onClick={() => setHelpful((v) => !v)}
-          className={`flex items-center gap-1.5 text-[11px] font-semibold transition-colors ${
+        <div
+          onClick={(e) => { e.stopPropagation(); setHelpful((v) => !v); }}
+          className={`flex items-center gap-1.5 text-[11px] font-semibold transition-colors cursor-pointer ${
             helpful ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <ThumbsUp className={`w-3.5 h-3.5 ${helpful ? 'fill-slate-900' : ''}`} />
           Útil {(review.helpfulCount ?? 0) + (helpful ? 1 : 0)}
-        </button>
+        </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function ReviewsSection({ product, onOpenDrawer }: { product: Product; onOpenDrawer: () => void }) {
+function ReviewsSection({ product, onOpenDrawer, onOpenDrawerAtReview }: { product: Product; onOpenDrawer: () => void; onOpenDrawerAtReview: (id: string) => void }) {
   const reviews = product.reviews ?? [];
   const rating = product.rating ?? 0;
   const reviewCount = product.reviewCount ?? reviews.length;
@@ -1002,7 +1060,7 @@ function ReviewsSection({ product, onOpenDrawer }: { product: Product; onOpenDra
           {previewReviews.length > 0 && (
             <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible">
               {previewReviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
+                <ReviewCard key={r.id} review={r} onOpen={() => onOpenDrawerAtReview(r.id)} />
               ))}
             </div>
           )}
