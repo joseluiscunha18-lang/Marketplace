@@ -8,8 +8,9 @@ import {
   ShieldCheck,
   Check, Share2, Heart, ChevronLeft, ChevronRight,
   MoreHorizontal, Star, Truck, RefreshCcw, Lock,
+  BadgeCheck, ThumbsUp, ChevronDown,
 } from 'lucide-react';
-import type { Product, Store } from '@/types';
+import type { Product, Store, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { getSizeLabel } from '@/lib/productHelpers';
@@ -415,6 +416,11 @@ export const ProductDetailClient = ({
                 <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Descrição do Produto</span>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">{product.description}</p>
               </div>
+
+              {/* Avaliações */}
+              <div className="pt-4 border-t border-slate-100">
+                <ReviewsSection product={product} />
+              </div>
             </div>
           </div>
         </div>
@@ -443,6 +449,169 @@ export const ProductDetailClient = ({
     </div>
   );
 };
+
+/* ─── Reviews / Avaliações ───────────────────────────────────────── */
+function ReviewStars({ rating, size = 'w-3.5 h-3.5' }: { rating: number; size?: string }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          className={`${size} ${i <= Math.round(rating) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function RatingBar({ stars, percent }: { stars: number; percent: number }) {
+  return (
+    <button className="flex items-center gap-2 w-full group">
+      <span className="text-[11px] font-bold text-slate-500 w-2.5 tabular-nums">{stars}</span>
+      <Star className="w-3 h-3 fill-slate-300 text-slate-300 shrink-0" />
+      <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-slate-900 transition-all duration-700 ease-out"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <span className="text-[11px] font-semibold text-slate-400 w-7 text-right tabular-nums">{percent}%</span>
+    </button>
+  );
+}
+
+function ReviewCard({ review }: { review: Review }) {
+  const [helpful, setHelpful] = useState(false);
+  const initials = review.author
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const formattedDate = new Date(review.date).toLocaleDateString('pt-MZ', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  return (
+    <div className="w-[78%] sm:w-auto shrink-0 sm:shrink snap-start bg-white border border-slate-100 rounded-2xl p-4 flex flex-col gap-2.5 shadow-[0_2px_12px_rgb(0,0,0,0.03)]">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-slate-900 text-white shrink-0 flex items-center justify-center text-[11px] font-black tracking-tight">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="text-[13px] font-bold text-slate-900 truncate">{review.author}</p>
+              {review.verified && <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+            </div>
+            <p className="text-[11px] text-slate-400 font-medium">{formattedDate}</p>
+          </div>
+        </div>
+        <ReviewStars rating={review.rating} />
+      </div>
+
+      <p className="text-[12.5px] text-slate-600 leading-relaxed font-medium line-clamp-4">
+        {review.text}
+      </p>
+
+      <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-slate-50">
+        {review.size ? (
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Tamanho {review.size}
+          </span>
+        ) : <span />}
+        <button
+          onClick={() => setHelpful((v) => !v)}
+          className={`flex items-center gap-1.5 text-[11px] font-semibold transition-colors ${
+            helpful ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <ThumbsUp className={`w-3.5 h-3.5 ${helpful ? 'fill-slate-900' : ''}`} />
+          Útil {(review.helpfulCount ?? 0) + (helpful ? 1 : 0)}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ReviewsSection({ product }: { product: Product }) {
+  const [expanded, setExpanded] = useState(false);
+  const reviews = product.reviews ?? [];
+  const rating = product.rating ?? 0;
+  const reviewCount = product.reviewCount ?? reviews.length;
+
+  if (reviewCount === 0 && reviews.length === 0) return null;
+
+  // Distribuição de estrelas — usa as reviews reais quando existem, com fallback estimado a partir da média.
+  const distribution = [5, 4, 3, 2, 1].map((stars) => {
+    if (reviews.length > 0) {
+      const count = reviews.filter((r) => Math.round(r.rating) === stars).length;
+      return { stars, percent: Math.round((count / reviews.length) * 100) };
+    }
+    // Fallback: curva plausível centrada na média quando não há reviews individuais.
+    const distance = Math.abs(stars - rating);
+    const weight = Math.max(0, 5 - distance * 3.2);
+    return { stars, percent: Math.round(weight * 14) };
+  });
+  const maxPercent = Math.max(...distribution.map((d) => d.percent), 1);
+  const normalizedDistribution = distribution.map((d) => ({
+    ...d,
+    percent: Math.round((d.percent / maxPercent) * 100),
+  }));
+
+  const visibleReviews = expanded ? reviews : reviews.slice(0, 4);
+
+  return (
+    <div className="space-y-4">
+      <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Avaliações</span>
+
+      {/* Resumo: nota + distribuição */}
+      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 flex flex-col sm:flex-row gap-5 sm:gap-8">
+        <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-1.5 shrink-0">
+          <span className="text-4xl font-black text-slate-900 tracking-tight tabular-nums">
+            {rating.toFixed(1)}
+          </span>
+          <div className="flex flex-col gap-1">
+            <ReviewStars rating={rating} size="w-4 h-4" />
+            <span className="text-[11px] font-semibold text-slate-500">
+              {reviewCount.toLocaleString('pt-MZ')} classificações
+            </span>
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col gap-1.5 justify-center min-w-0">
+          {normalizedDistribution.map((d) => (
+            <RatingBar key={d.stars} stars={d.stars} percent={d.percent} />
+          ))}
+        </div>
+      </div>
+
+      {/* Cards de avaliação */}
+      {reviews.length > 0 && (
+        <>
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible">
+            {visibleReviews.map((r) => (
+              <ReviewCard key={r.id} review={r} />
+            ))}
+          </div>
+
+          {reviews.length > 4 && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-bold text-xs flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+            >
+              {expanded ? 'Ver menos avaliações' : 'Ler mais avaliações'}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 /* ─── Related products carousel/grid section ────────────────────────── */
 function RelatedSection({
