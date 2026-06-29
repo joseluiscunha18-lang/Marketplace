@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { BottomNav } from '@/components/BottomNav';
 import { MarketplaceShell } from '@/components/MarketplaceShell';
+import { FlyingImageOverlay } from '@/components/FlyingImageOverlay';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://shopyump.com'),
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </MarketplaceShell>
             <Footer />
             <CartDrawer />
+            <FlyingImageOverlay />
             <BottomNav />
           </UserProvider>
         </CartProvider>
