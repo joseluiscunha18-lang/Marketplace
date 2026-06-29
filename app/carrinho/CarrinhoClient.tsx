@@ -302,13 +302,7 @@ export const CarrinhoClient = () => {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-36 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-end mb-2">
-        <span
-          className="text-[13px] font-bold text-slate-500 transition-all"
-          style={{ transform: flyAnim ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.3s ease' }}
-        >
-          {totalItems} {totalItems === 1 ? 'item' : 'itens'}
-        </span>
+      <div className="mb-1">
       </div>
 
       {/* Store groups */}
