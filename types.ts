@@ -22,6 +22,18 @@ export interface ProductVariantColor {
   hex: string;
 }
 
+export interface Review {
+  id: string;
+  author: string;
+  avatar?: string;
+  rating: number;
+  date: string;
+  text: string;
+  verified?: boolean;
+  helpfulCount?: number;
+  size?: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -43,6 +55,7 @@ export interface Product {
   featured?: boolean;
   rating?: number;
   reviewCount?: number;
+  reviews?: Review[];
   createdAt: string;
 }
 
