@@ -1,5 +1,6 @@
 import { StoreCheckoutClient } from './StoreCheckoutClient';
 
-export default function StoreCheckoutPage({ params }: { params: { storeSlug: string } }) {
-  return <StoreCheckoutClient storeSlug={params.storeSlug} />;
+export default async function StoreCheckoutPage({ params }: { params: Promise<{ storeSlug: string }> }) {
+  const { storeSlug } = await params;
+  return <StoreCheckoutClient storeSlug={storeSlug} />;
 }
