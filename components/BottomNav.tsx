@@ -92,14 +92,14 @@ export const BottomNav = () => {
                   className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
                     isActive
                       ? 'text-white shadow-md'
-                      : item.isCart && cartAnimating
-                      ? 'text-white shadow-lg scale-110'
+                      : item.isCart && (cartAnimating || totalItems > 0)
+                      ? 'text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
                       : 'text-slate-400'
                   }`}
                   style={
                     isActive
                       ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }
-                      : item.isCart && cartAnimating
+                      : item.isCart && (cartAnimating || totalItems > 0)
                       ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' }
                       : {}
                   }
