@@ -46,22 +46,10 @@ export const FlyingImageOverlay = () => {
     }
 
     const { rect } = flyingImage;
-    const size = Math.min(Math.max(rect.width, rect.height, 220), 260);
+    const size = Math.min(Math.max(rect.width, rect.height, 130), 150);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-
-    // Start big and a bit higher than dead-center (roughly upper-middle of
-    // the screen) — regardless of where the "add to cart" button sits on
-    // the page (top, middle, or bottom) — so it reads as a clear, prominent
-    // pop instead of a small thumbnail buried in the middle.
-    const originX = vw / 2 - size / 2;
-    const originY = Math.max(vh * 0.32 - size / 2, 16);
-
-    originRef.current = { x: originX, y: originY, size };
-
-    // No extra rise needed — it already starts centered — just a brief
-    // pop/settle so it reads as "appearing" before it travels to the cart.
-    riseOffsetRef.current = { dx: 0, dy: 0 };
+    const margin = 16;
 
     // Re-measure the cart icon right now (not at some earlier mount time) so
     // layout shifts/scrolling since the click can't throw the landing off.
@@ -69,8 +57,21 @@ export const FlyingImageOverlay = () => {
     const cartX = cartCenter ? cartCenter.x : vw - 32;
     const cartY = cartCenter ? cartCenter.y : vh - 32;
 
-    // Step 1: approach — travel down next to the cart and shrink to a small
-    // thumbnail (not yet on top of the icon), so it visibly "arrives" there.
+    // Start a bit higher than dead-center, but horizontally aligned with the
+    // cart icon's X position — so the whole trip down is a straight vertical
+    // drop instead of a diagonal/crooked path.
+    const originX = Math.min(Math.max(cartX - size / 2, margin), vw - size - margin);
+    const originY = Math.max(vh * 0.32 - size / 2, 16);
+
+    originRef.current = { x: originX, y: originY, size };
+
+    // No extra rise needed — it already starts in place — just a brief
+    // pop/settle so it reads as "appearing" before it travels to the cart.
+    riseOffsetRef.current = { dx: 0, dy: 0 };
+
+    // Step 1: approach — travel straight down toward the cart and shrink to
+    // a small thumbnail (not yet on top of the icon), so it visibly "arrives"
+    // there. X stays aligned with the cart, so the drop reads as vertical.
     const approachSize = Math.max(size * 0.32, 36);
     const approachTargetX = cartX - approachSize / 2;
     const approachTargetY = cartY - approachSize / 2 - 26;
