@@ -47,33 +47,33 @@ export const FlyingImageOverlay = () => {
 
     const { rect } = flyingImage;
     const size = Math.min(rect.width, rect.height, 170);
-    const margin = 12;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    const rawX = rect.left + rect.width / 2 - size / 2;
-    const rawY = rect.top + rect.height / 2 - size / 2;
-    const originX = Math.min(Math.max(rawX, margin), vw - size - margin);
-    const originY = Math.min(Math.max(rawY, margin), vh - size - margin);
+    // Always start from the center of the screen, at a reasonable fixed
+    // size — regardless of where the "add to cart" button sits on the page
+    // (top, middle, or bottom). This avoids ever pinning the clone to an
+    // edge when the button/image isn't where we'd expect.
+    const originX = vw / 2 - size / 2;
+    const originY = vh / 2 - size / 2;
 
     originRef.current = { x: originX, y: originY, size };
 
-    // Rise to a clear, comfortable spot — lower-middle of the screen, around
-    // eye level — instead of stopping near the top where it read as "stuck".
-    const riseTargetY = Math.min(originY, vh * 0.6 - size / 2);
-    riseOffsetRef.current = { dx: 0, dy: riseTargetY - originY };
+    // No extra rise needed — it already starts centered — just a brief
+    // pop/settle so it reads as "appearing" before it travels to the cart.
+    riseOffsetRef.current = { dx: 0, dy: 0 };
 
     // Re-measure the cart icon right now (not at some earlier mount time) so
     // layout shifts/scrolling since the click can't throw the landing off.
     const cartCenter = getCartIconCenter();
-    const cartX = cartCenter ? cartCenter.x : vw - margin - 20;
-    const cartY = cartCenter ? cartCenter.y : vh - margin - 20;
+    const cartX = cartCenter ? cartCenter.x : vw - 32;
+    const cartY = cartCenter ? cartCenter.y : vh - 32;
 
     // Step 1: approach — travel down next to the cart and shrink to a small
     // thumbnail (not yet on top of the icon), so it visibly "arrives" there.
     const approachSize = Math.max(size * 0.32, 36);
-    const approachTargetX = cartX - approachSize / 2 - 8;
-    const approachTargetY = cartY - approachSize / 2 - 8;
+    const approachTargetX = cartX - approachSize / 2;
+    const approachTargetY = cartY - approachSize / 2 - 26;
     approachOffsetRef.current = {
       dx: approachTargetX - originX,
       dy: approachTargetY - originY,
