@@ -9,7 +9,7 @@ import {
  Check, Share2, Heart, ChevronLeft, ChevronRight,
  MoreHorizontal, Star, Truck, RefreshCcw, Lock,
  BadgeCheck, ThumbsUp, ChevronDown, X, SlidersHorizontal,
- MessageSquareDashed, Flag, Search, Minus, Plus
+ MessageSquareDashed, Flag, Search, Minus, Plus, Loader2
 } from 'lucide-react';
 import type { Product, Store, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
@@ -26,7 +26,7 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
    : null;
 
  return (
-   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white/90 backdrop-blur-md">
+   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
      <Link href={`/loja/${product.storeSlug}`} className="flex items-center gap-3 min-w-0">
        <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-900 shrink-0 shadow-sm">
          {store?.logo ? (
@@ -41,7 +41,7 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
          <p className="font-black text-[15px] text-slate-900 leading-tight truncate">{product.storeName}</p>
          {product.rating && reviewCount && (
            <div className="flex items-center gap-1 mt-0.5">
-             <Star className="w-3 h-3 fill-slate-800 text-slate-800" />
+             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
              <span className="text-[12px] font-bold text-slate-700">{product.rating.toFixed(1).replace('.', ',')}</span>
              <span className="text-[12px] text-slate-400 font-medium">({reviewCount})</span>
            </div>
@@ -80,6 +80,7 @@ export const ProductDetailClient = ({
  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
  const [quantity, setQuantity] = useState(1);
+ const [addStatus, setAddStatus] = useState<'idle' | 'loading' | 'success'>('idle');
  const [copied, setCopied] = useState(false);
  const scrollRef = useRef<HTMLDivElement | null>(null);
  const isProgrammaticScroll = useRef(false);
@@ -87,6 +88,14 @@ export const ProductDetailClient = ({
  const [reviewsOpen, setReviewsOpen] = useState(false);
  const [reviewsOpenId, setReviewsOpenId] = useState<string | null>(null);
  const isFav = isFavorite(product.id);
+
+ useEffect(() => {
+   const header = document.querySelector('header');
+   if (header) header.style.display = 'none';
+   return () => {
+     if (header) header.style.display = '';
+   };
+ }, []);
 
  useEffect(() => {
    const bottomNav = document.querySelector('nav[class*="fixed bottom-0"]') as HTMLElement | null;
@@ -112,6 +121,22 @@ export const ProductDetailClient = ({
    navigator.clipboard.writeText(productUrl);
    setCopied(true);
    setTimeout(() => setCopied(false), 2000);
+ };
+
+ const handleAddToCart = () => {
+   if (addStatus !== 'idle') return;
+   
+   const rect = imageContainerRef.current?.getBoundingClientRect();
+   setAddStatus('loading');
+   
+   setTimeout(() => {
+     addToCart(product, selectedSize || undefined, selectedColor || undefined, rect, quantity);
+     
+     setAddStatus('success');
+     setTimeout(() => {
+       setAddStatus('idle');
+     }, 2500);
+   }, 400);
  };
 
  const handleBuyNow = () => {
@@ -160,7 +185,7 @@ export const ProductDetailClient = ({
 
          {/* ── Gallery column ───────────────────────────────────── */}
          <div className="lg:col-span-7 space-y-0">
-           <div className="lg:hidden sticky top-0 z-40">
+           <div className="lg:hidden">
              <StoreTopBar product={product} store={store} />
            </div>
 
@@ -367,19 +392,31 @@ export const ProductDetailClient = ({
                </div>
 
                <button
-                 onClick={() => {
-                   const rect = imageContainerRef.current?.getBoundingClientRect();
-                   addToCart(product, selectedSize || undefined, selectedColor || undefined, rect, quantity);
-                 }}
-                 className="w-full py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center active:scale-[0.98] transition-all"
+                 onClick={handleAddToCart}
+                 disabled={addStatus !== 'idle'}
+                 className={`w-full py-4 rounded-full font-bold text-[15px] flex items-center justify-center transition-all duration-300 ${
+                   addStatus === 'success'
+                     ? 'bg-emerald-500 text-white scale-[0.98]'
+                     : addStatus === 'loading'
+                     ? 'bg-[#6344F5] text-white opacity-90'
+                     : 'bg-[#6344F5] hover:bg-[#5333e6] text-white active:scale-[0.98]'
+                 }`}
                >
-                 Adicionar ao Carrinho
+                 {addStatus === 'loading' ? (
+                   <Loader2 className="w-5 h-5 animate-spin text-white" />
+                 ) : addStatus === 'success' ? (
+                   <span className="flex items-center gap-2">
+                     <Check className="w-5 h-5" /> Adicionado ao carrinho
+                   </span>
+                 ) : (
+                   'Adicionar ao carrinho'
+                 )}
                </button>
                <button
                  onClick={handleBuyNow}
-                 className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center justify-center active:scale-[0.98] transition-all"
+                 className="w-full py-4 bg-[#0F172A] hover:bg-black text-white rounded-full font-bold text-[15px] flex items-center justify-center active:scale-[0.98] transition-all"
                >
-                 Comprar Agora
+                 Comprar agora
                </button>
 
                <div className="grid grid-cols-2 gap-4">
