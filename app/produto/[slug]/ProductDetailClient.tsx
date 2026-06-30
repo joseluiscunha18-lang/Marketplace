@@ -74,6 +74,7 @@ export const ProductDetailClient = ({
  const { addToCart } = useCart();
  const { toggleFavorite, isFavorite } = useUser();
  const imageContainerRef = useRef<HTMLDivElement | null>(null);
+ const addToCartBtnRef = useRef<HTMLButtonElement | null>(null);
 
  const allImages = product.images && product.images.length > 0 ? product.images : [product.image];
  const [activeIndex, setActiveIndex] = useState(0);
@@ -125,8 +126,15 @@ export const ProductDetailClient = ({
 
  const handleAddToCart = () => {
    if (addStatus !== 'idle') return;
-   
-   const rect = imageContainerRef.current?.getBoundingClientRect();
+
+   const imgRect = imageContainerRef.current?.getBoundingClientRect();
+   const vh = window.innerHeight;
+   // If the product image is scrolled out of view (user scrolled down to
+   // reach the button), flying a clone from there just pins it to the
+   // screen edge and the trip down to the cart looks wrong. In that case,
+   // start the flight from the button itself instead.
+   const imageVisible = !!imgRect && imgRect.bottom > 0 && imgRect.top < vh;
+   const rect = imageVisible ? imgRect : addToCartBtnRef.current?.getBoundingClientRect();
    setAddStatus('loading');
    
    setTimeout(() => {
@@ -392,6 +400,7 @@ export const ProductDetailClient = ({
                </div>
 
                <button
+                ref={addToCartBtnRef}
                  onClick={handleAddToCart}
                  disabled={addStatus !== 'idle'}
                  className={`w-full py-4 rounded-full font-bold text-[15px] flex items-center justify-center transition-all duration-300 ${
