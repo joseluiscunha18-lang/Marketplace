@@ -11,20 +11,10 @@ export const FlyingImageOverlay = () => {
 
   useEffect(() => {
     if (flyingImage) {
-      // Find visible cart icon position
-      const cartBtns = document.querySelectorAll('[data-cart-icon]');
-      let activeCartBtn = cartBtns[0] as HTMLElement | null;
-      for (let i = 0; i < cartBtns.length; i++) {
-        const btn = cartBtns[i] as HTMLElement;
-        const rect = btn.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
-           activeCartBtn = btn;
-           break;
-        }
-      }
-      
-      if (activeCartBtn) {
-        const r = activeCartBtn.getBoundingClientRect();
+      // Find cart icon position in bottom nav
+      const cartBtn = document.querySelector('[data-cart-icon]') as HTMLElement | null;
+      if (cartBtn) {
+        const r = cartBtn.getBoundingClientRect();
         setCartIconPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
       }
       setPhase('rise');
