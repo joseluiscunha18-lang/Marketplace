@@ -351,8 +351,8 @@ export const ProductDetailClient = ({
              </div>
 
              <div className="space-y-3 pt-5 border-t border-slate-100">
-               <div className="flex items-center gap-4">
-                 <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+               <div className="space-y-2">
+                 <span className="text-sm font-bold text-slate-900">
                    Quantidade
                  </span>
                  <div className="inline-flex items-center gap-1 bg-slate-100 rounded-full p-1">
