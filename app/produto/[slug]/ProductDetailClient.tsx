@@ -355,7 +355,7 @@ export const ProductDetailClient = ({
                  <span className="text-sm font-bold text-slate-900">
                    Quantidade
                  </span>
-                 <div className="flex items-center justify-between w-full bg-slate-50 rounded-full px-2 py-1.5">
+                 <div className="flex items-center gap-2 bg-slate-50 rounded-full px-2 py-1.5 w-fit">
                    <button
                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                      className="w-11 h-11 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90 shrink-0"
@@ -965,5 +965,3 @@ function RelatedSection({
        ))}
      </div>
    </section>
- );
-}
