@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 
 const RISE_MS = 280;
 const HOLD_MS = 1000; // pause at peak before falling so the user can actually see the image
-const APPROACH_MS = 500; // travel from the peak down to a thumbnail spot near the cart
+const APPROACH_MS = 360; // travel from the peak down to a thumbnail spot near the cart
 const NEAR_HOLD_MS = 220; // brief pause as a thumbnail right next to the cart icon
 const ENTER_MS = 260; // final shrink into the cart icon
 
@@ -59,7 +59,7 @@ export const FlyingImageOverlay = () => {
 
     // Clamp the origin to stay on-screen...
     const originX = Math.min(Math.max(cartX - size / 2, margin), vw - size - margin);
-    const originY = Math.max(vh * 0.32 - size / 2, 16);
+    const originY = Math.max(vh * 0.2 - size / 2, 16);
 
     // ...then snap the "target" X to whatever the (possibly clamped) origin
     // actually is. Every later phase travels toward this same X, so dx is
