@@ -5,7 +5,7 @@ import type { CartItem, Product } from '@/types';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect) => void;
+  addToCart: (product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect, quantity?: number) => void;
   removeFromCart: (index: number) => void;
   updateQuantity: (index: number, quantity: number) => void;
   clearCart: () => void;
@@ -59,7 +59,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart, mounted]);
 
-  const addToCart = useCallback((product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect) => {
+  const addToCart = useCallback((product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect, quantity: number = 1) => {
     // Trigger fly animation
     if (imageRect && product.image) {
       setFlyingImage({ src: product.image, rect: imageRect });
@@ -82,10 +82,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       if (existingIndex > -1) {
         const next = [...prev];
-        next[existingIndex].quantity += 1;
+        next[existingIndex].quantity += quantity;
         return next;
       }
-      return [...prev, { ...product, quantity: 1, selectedSize, selectedColor }];
+      return [...prev, { ...product, quantity, selectedSize, selectedColor }];
     });
   }, []);
 
