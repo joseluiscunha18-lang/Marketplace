@@ -88,14 +88,13 @@ export const BottomNav = () => {
                       ? 'w-11 h-11 text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
                       : isActive
                       ? 'w-9 h-9 text-[#171717]'
-                      : 'w-9 h-9 text-[#a89b8c]'
+                      : 'w-9 h-9 text-[#b0a9a2]'
                   }`}
                   style={cartColored ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' } : {}}
                 >
                   <Icon
                     className={`transition-all duration-200 ${cartColored ? 'w-[22px] h-[22px]' : 'w-[22px] h-[22px]'}`}
-                    strokeWidth={cartColored ? 2.2 : 1.8}
-                    fill="currentColor"
+                    strokeWidth={cartColored ? 2.2 : isActive ? 2.8 : 2.2}
                   />
                   {/* Cart badge */}
                   {item.isCart && totalItems > 0 && (
@@ -116,7 +115,7 @@ export const BottomNav = () => {
                 {/* Label */}
                 <span
                   className={`relative z-10 text-[10px] tracking-tight transition-colors duration-200 leading-none ${
-                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#a89b8c]'
+                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#b0a9a2]'
                   }`}
                 >
                   {item.label}
