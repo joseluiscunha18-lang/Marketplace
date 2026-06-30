@@ -3,9 +3,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 
-const RISE_MS = 220;
-const FALL_MS = 550;
-const HOLD_MS = 120; // brief pause at peak before falling
+const RISE_MS = 280;
+const FALL_MS = 650;
+const HOLD_MS = 1000; // pause at peak before falling so the user can actually see the image
 
 export const FlyingImageOverlay = () => {
   const { flyingImage, clearFlyingImage } = useCart();
@@ -21,10 +21,21 @@ export const FlyingImageOverlay = () => {
   useEffect(() => {
     if (flyingImage) {
       // Find cart icon position in bottom nav
-      const cartBtn = document.querySelector('[data-cart-icon]') as HTMLElement | null;
-      if (cartBtn) {
-        const r = cartBtn.getBoundingClientRect();
-        setCartIconPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      const findCartIcon = () => {
+        const cartBtn = document.querySelector('[data-cart-icon]') as HTMLElement | null;
+        if (cartBtn) {
+          const r = cartBtn.getBoundingClientRect();
+          setCartIconPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+          return true;
+        }
+        return false;
+      };
+
+      if (!findCartIcon()) {
+        // Element might not be mounted/measured yet on first paint — retry once.
+        requestAnimationFrame(() => {
+          findCartIcon();
+        });
       }
 
       clearTimers();
@@ -50,7 +61,7 @@ export const FlyingImageOverlay = () => {
   if (!flyingImage || phase === 'idle') return null;
 
   const { rect, src } = flyingImage;
-  const size = Math.min(rect.width, rect.height, 110);
+  const size = Math.min(rect.width, rect.height, 170);
   const margin = 12;
 
   // Raw position derived from the source element's on-screen rect.
@@ -69,10 +80,11 @@ export const FlyingImageOverlay = () => {
     (typeof window !== 'undefined' ? window.innerHeight : rawY) - size - margin
   );
 
-  const targetX = cartIconPos ? cartIconPos.x - size / 2 : clampedStartX;
-  const targetY = cartIconPos
-    ? cartIconPos.y - size / 2
-    : (typeof window !== 'undefined' ? window.innerHeight : 0) - 60;
+  const fallbackX = (typeof window !== 'undefined' ? window.innerWidth : clampedStartX) - 40;
+  const fallbackY = (typeof window !== 'undefined' ? window.innerHeight : 0) - 40;
+
+  const targetX = cartIconPos ? cartIconPos.x - size / 2 : fallbackX - size / 2;
+  const targetY = cartIconPos ? cartIconPos.y - size / 2 : fallbackY - size / 2;
 
   const isFalling = phase === 'fall';
 
@@ -98,6 +110,39 @@ export const FlyingImageOverlay = () => {
             : `left ${RISE_MS}ms cubic-bezier(0.22,1,0.36,1), top ${RISE_MS}ms cubic-bezier(0.22,1,0.36,1), transform ${RISE_MS}ms ease, opacity ${RISE_MS}ms ease`,
         }}
       />
+      {isFalling && cartIconPos && (
+        <div
+          style={{
+            position: 'absolute',
+            left: cartIconPos.x,
+            top: cartIconPos.y,
+            width: 1,
+            height: 1,
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: -20,
+              top: -20,
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '2px solid currentColor',
+              color: '#7c3aed',
+              opacity: 0,
+              animation: `cartPulse ${FALL_MS}ms ease-out ${FALL_MS - 200}ms forwards`,
+            }}
+          />
+        </div>
+      )}
+      <style>{`
+        @keyframes cartPulse {
+          0% { transform: scale(0.4); opacity: 0; }
+          40% { opacity: 0.8; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 };
