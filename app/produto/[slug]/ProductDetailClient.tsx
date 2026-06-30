@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -351,25 +351,25 @@ export const ProductDetailClient = ({
              </div>
 
              <div className="space-y-3 pt-5 border-t border-slate-100">
-               <div className="space-y-2">
-                 <span className="text-sm font-bold text-slate-900">
+               <div className="flex flex-col gap-2 items-start">
+                 <span className="text-sm font-semibold text-gray-900">
                    Quantidade
                  </span>
-                 <div className="inline-flex items-center gap-1 bg-slate-100 rounded-full p-1">
+                 <div className="flex items-center justify-between w-28 px-3 py-2 bg-white border border-gray-200 rounded-full">
                    <button
                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                     className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
+                     className="p-1 transition-colors hover:text-gray-600 active:scale-95"
                      aria-label="Diminuir quantidade"
                    >
-                     <Minus className="w-4 h-4" />
+                     <Minus className="w-5 h-5" />
                    </button>
-                   <span className="text-[15px] font-black w-10 text-center text-slate-900">{quantity}</span>
+                   <span className="text-base font-semibold min-w-[1.5rem] text-center text-slate-900">{quantity}</span>
                    <button
                      onClick={() => setQuantity((q) => q + 1)}
-                     className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
+                     className="p-1 transition-colors hover:text-gray-600 active:scale-95"
                      aria-label="Aumentar quantidade"
                    >
-                     <Plus className="w-4 h-4" />
+                     <Plus className="w-5 h-5" />
                    </button>
                  </div>
                </div>
