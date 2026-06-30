@@ -122,9 +122,17 @@ export const ProductDetailClient = ({
  };
 
  const handleBuyNow = () => {
-   const rect = imageContainerRef.current?.getBoundingClientRect();
-   addToCart(product, selectedSize || undefined, selectedColor || undefined, rect);
-   router.push('/checkout');
+   // Salva apenas este produto no sessionStorage — não toca no carrinho
+   const buyNowItem = {
+     ...product,
+     quantity: 1,
+     selectedSize: selectedSize || undefined,
+     selectedColor: selectedColor || undefined,
+   };
+   try {
+     sessionStorage.setItem('shopyump_buynow', JSON.stringify(buyNowItem));
+   } catch { /* ignore */ }
+   router.push('/checkout?buynow=1');
  };
 
  const goTo = (index: number) => {
