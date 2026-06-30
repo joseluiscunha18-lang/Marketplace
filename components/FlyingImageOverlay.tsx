@@ -46,16 +46,16 @@ export const FlyingImageOverlay = () => {
     }
 
     const { rect } = flyingImage;
-    const size = Math.min(rect.width, rect.height, 170);
+    const size = Math.min(Math.max(rect.width, rect.height, 220), 260);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Always start from the center of the screen, at a reasonable fixed
-    // size — regardless of where the "add to cart" button sits on the page
-    // (top, middle, or bottom). This avoids ever pinning the clone to an
-    // edge when the button/image isn't where we'd expect.
+    // Start big and a bit higher than dead-center (roughly upper-middle of
+    // the screen) — regardless of where the "add to cart" button sits on
+    // the page (top, middle, or bottom) — so it reads as a clear, prominent
+    // pop instead of a small thumbnail buried in the middle.
     const originX = vw / 2 - size / 2;
-    const originY = vh / 2 - size / 2;
+    const originY = Math.max(vh * 0.32 - size / 2, 16);
 
     originRef.current = { x: originX, y: originY, size };
 
