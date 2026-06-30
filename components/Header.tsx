@@ -16,6 +16,7 @@ export const Header = () => {
   // Páginas sem distrações
   if (pathname === '/checkout' || pathname.startsWith('/checkout/')) return null;
   if (pathname === '/carrinho') return null;
+  if (pathname.startsWith('/produto/')) return null;
 
   const isMarketplace = MARKETPLACE_ROUTES.some((r) => pathname.startsWith(r));
 
