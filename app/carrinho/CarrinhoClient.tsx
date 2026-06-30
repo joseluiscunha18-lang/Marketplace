@@ -188,7 +188,7 @@ function StoreGroup({
       {/* Per-store checkout button */}
       <div className="px-4 pb-4 pt-1">
         <Link
-          href="/checkout"
+          href={`/checkout?store=${storeSlug}`}
           className="w-full py-3.5 flex items-center justify-center rounded-full font-black text-[14px] text-white active:scale-[0.98] transition-transform"
           style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
         >
