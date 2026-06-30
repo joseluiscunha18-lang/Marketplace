@@ -79,7 +79,7 @@ export const BottomNav = () => {
             );
             const Icon = item.icon;
 
-            const isColored = isActive || (item.isCart && (cartAnimating || totalItems > 0));
+            const cartColored = item.isCart && (isActive || cartAnimating || totalItems > 0);
 
             const inner = (
               <>
@@ -87,23 +87,25 @@ export const BottomNav = () => {
                 <span
                   data-cart-icon={item.isCart ? 'true' : undefined}
                   className={`relative z-10 flex items-center justify-center rounded-full transition-all duration-200 ${
-                    isColored
-                      ? 'w-9 h-9 text-white shadow-sm' + (item.isCart && cartAnimating ? ' scale-110' : '')
+                    cartColored
+                      ? 'w-14 h-14 text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
+                      : isActive
+                      ? 'w-8 h-8 text-[#171717]'
                       : 'w-8 h-8 text-[#8a6d4f]'
                   }`}
-                  style={isColored ? { background: '#171717', transition: 'all 0.3s ease' } : {}}
+                  style={cartColored ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' } : {}}
                 >
                   <Icon
-                    className={`transition-all duration-200 ${isColored ? 'w-[18px] h-[18px]' : 'w-5 h-5'}`}
-                    strokeWidth={isColored ? 2.2 : 1.8}
+                    className={`transition-all duration-200 ${cartColored ? 'w-6 h-6' : 'w-5 h-5'}`}
+                    strokeWidth={cartColored ? 2.2 : 1.8}
                   />
                   {/* Cart badge */}
                   {item.isCart && totalItems > 0 && (
                     <span
-                      className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full text-white font-black text-[9px] flex items-center justify-center px-1 z-20"
+                      className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-white font-black text-[10px] flex items-center justify-center px-1 z-20"
                       style={{
                         background: '#171717',
-                        border: '1.5px solid #fff',
+                        border: '2px solid #fff',
                         transform: cartAnimating ? 'scale(1.3)' : 'scale(1)',
                         transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                       }}
