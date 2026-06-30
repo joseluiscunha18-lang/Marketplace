@@ -88,6 +88,7 @@ export const Header = () => {
 
           {/* Carrinho */}
           <button
+            data-cart-icon
             onClick={() => setIsCartOpen(true)}
             className="relative p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 transition-all active:scale-95"
             aria-label="Carrinho de Compras"

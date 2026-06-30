@@ -57,11 +57,15 @@ export const FlyingImageOverlay = () => {
     const cartX = cartCenter ? cartCenter.x : vw - 32;
     const cartY = cartCenter ? cartCenter.y : vh - 32;
 
-    // Start a bit higher than dead-center, but horizontally aligned with the
-    // cart icon's X position — so the whole trip down is a straight vertical
-    // drop instead of a diagonal/crooked path.
+    // Clamp the origin to stay on-screen...
     const originX = Math.min(Math.max(cartX - size / 2, margin), vw - size - margin);
     const originY = Math.max(vh * 0.32 - size / 2, 16);
+
+    // ...then snap the "target" X to whatever the (possibly clamped) origin
+    // actually is. Every later phase travels toward this same X, so dx is
+    // always 0 and the descent is a perfectly straight vertical line — it
+    // can never read as diagonal/crooked, even when the origin got clamped.
+    const targetX = originX + size / 2;
 
     originRef.current = { x: originX, y: originY, size };
 
@@ -71,10 +75,13 @@ export const FlyingImageOverlay = () => {
 
     // Step 1: approach — travel straight down toward the cart and shrink to
     // a small thumbnail (not yet on top of the icon), so it visibly "arrives"
-    // there. X stays aligned with the cart, so the drop reads as vertical.
+    // there. X never changes from originX, so the drop is always vertical.
     const approachSize = Math.max(size * 0.32, 36);
-    const approachTargetX = cartX - approachSize / 2;
-    const approachTargetY = cartY - approachSize / 2 - 26;
+    const approachTargetX = targetX - approachSize / 2;
+    // Never let the thumbnail travel past the cart's own center — clamp the
+    // approach Y so it always lands strictly above (or, at worst, level
+    // with) the icon, never below/through it.
+    const approachTargetY = Math.min(cartY - approachSize / 2 - 26, cartY - 4);
     approachOffsetRef.current = {
       dx: approachTargetX - originX,
       dy: approachTargetY - originY,
@@ -82,9 +89,10 @@ export const FlyingImageOverlay = () => {
     };
 
     // Step 2: enter — from that thumbnail spot, shrink the rest of the way
-    // into the cart icon itself and fade out.
-    const enterTargetX = cartX - size / 2;
-    const enterTargetY = cartY - size / 2;
+    // into the cart icon itself and fade out. The landing Y is clamped to
+    // the icon's own center, so it can never overshoot past it.
+    const enterTargetX = targetX - size / 2;
+    const enterTargetY = Math.min(cartY, cartY) - size / 2;
     enterOffsetRef.current = { dx: enterTargetX - originX, dy: enterTargetY - originY };
 
     clearTimers();

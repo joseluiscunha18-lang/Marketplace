@@ -88,6 +88,7 @@ export const BottomNav = () => {
 
                 {/* Icon container */}
                 <span
+                  data-cart-icon={item.isCart ? 'true' : undefined}
                   className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
                     isActive
                       ? 'text-white shadow-md'
@@ -138,7 +139,6 @@ export const BottomNav = () => {
                 <button
                   key={item.label}
                   onClick={item.onClick}
-                  data-cart-icon={item.isCart ? 'true' : undefined}
                   className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-2xl transition-all duration-200 active:scale-90"
                 >
                   {inner}
@@ -150,7 +150,6 @@ export const BottomNav = () => {
               <Link
                 key={item.href!}
                 href={item.href!}
-                data-cart-icon={item.isCart ? 'true' : undefined}
                 className="flex flex-col items-center gap-1 relative px-3 py-1 rounded-2xl transition-all duration-200 active:scale-90"
               >
                 {inner}
