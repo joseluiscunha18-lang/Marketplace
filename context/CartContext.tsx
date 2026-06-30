@@ -15,6 +15,7 @@ interface CartContextType {
   totalPrice: number;
   cartAnimating: boolean;
   flyingImage: { src: string; rect: DOMRect } | null;
+  clearFlyingImage: () => void;
 }
 
 const defaultContext: CartContextType = {
@@ -29,6 +30,7 @@ const defaultContext: CartContextType = {
   totalPrice: 0,
   cartAnimating: false,
   flyingImage: null,
+  clearFlyingImage: () => {},
 };
 
 const CartContext = createContext<CartContextType>(defaultContext);
@@ -60,14 +62,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cart, mounted]);
 
   const addToCart = useCallback((product: Product, selectedSize?: string, selectedColor?: string, imageRect?: DOMRect, quantity: number = 1) => {
-    // Trigger fly animation
+    // Trigger fly animation — the FlyingImageOverlay owns the full rise→fall
+    // animation lifecycle and calls clearFlyingImage() itself when it's done,
+    // so we never cut the animation off mid-flight here.
     if (imageRect && product.image) {
       setFlyingImage({ src: product.image, rect: imageRect });
-      setTimeout(() => {
-        setFlyingImage(null);
-        setCartAnimating(true);
-        setTimeout(() => setCartAnimating(false), 600);
-      }, 800);
     } else {
       setCartAnimating(true);
       setTimeout(() => setCartAnimating(false), 600);
@@ -89,6 +88,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
+  const clearFlyingImage = useCallback(() => {
+    setFlyingImage(null);
+    setCartAnimating(true);
+    setTimeout(() => setCartAnimating(false), 600);
+  }, []);
+
   const removeFromCart = (index: number) => setCart((prev) => prev.filter((_, i) => i !== index));
 
   const updateQuantity = (index: number, quantity: number) => {
@@ -106,7 +111,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, totalItems, totalPrice, cartAnimating, flyingImage }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isCartOpen, setIsCartOpen, totalItems, totalPrice, cartAnimating, flyingImage, clearFlyingImage }}>
       {children}
     </CartContext.Provider>
   );
