@@ -12,11 +12,11 @@ import { useUser } from '@/context/UserContext';
 import { MOCK_STORES } from '@/data/mockStores';
 import type { CartItem } from '@/types';
 
-// Componente interno que usa useSearchParams
 const CheckoutInner = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isBuyNow = searchParams.get('buynow') === '1';
+  const storeParam = searchParams.get('store'); // loja vinda do carrinho
 
   const { cart, removeFromCart } = useCart();
   const { addOrderToHistory, updateUserInfo, userInfo } = useUser();
@@ -29,6 +29,7 @@ const CheckoutInner = () => {
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
 
+  // Carregar produto do "Comprar Agora"
   useEffect(() => {
     if (isBuyNow) {
       try {
@@ -38,41 +39,45 @@ const CheckoutInner = () => {
     }
   }, [isBuyNow]);
 
-  const items: CartItem[] = isBuyNow
-    ? buyNowItem ? [buyNowItem] : []
-    : cart;
+  // Determinar quais itens mostrar
+  let items: CartItem[] = [];
+  if (isBuyNow) {
+    // Comprar Agora — produto isolado, não toca no carrinho
+    items = buyNowItem ? [buyNowItem] : [];
+  } else if (storeParam) {
+    // Vindo do carrinho — apenas os itens desta loja
+    items = cart.filter((i) => i.storeSlug === storeParam);
+  } else {
+    // Fallback — todos os itens do carrinho
+    items = cart;
+  }
 
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
 
-  const storeSlug = items[0]?.storeSlug;
+  const storeSlug = isBuyNow ? items[0]?.storeSlug : (storeParam ?? items[0]?.storeSlug);
   const store = MOCK_STORES.find((s) => s.slug === storeSlug);
   const storeName = store?.name ?? items[0]?.storeName ?? '';
   const storePhone = store?.whatsapp ?? '258840000000';
   const storeInitials = storeName.slice(0, 2).toUpperCase();
 
-  if (!isBuyNow && cart.length === 0) {
+  // Estados vazios
+  if (isBuyNow && !buyNowItem) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center pb-24">
-        <p className="text-slate-500 font-semibold">Não há itens no carrinho.</p>
-        <button
-          onClick={() => router.push('/produtos')}
-          className="px-6 py-3 bg-slate-900 text-white rounded-full font-black text-sm"
-        >
+        <p className="text-slate-500 font-semibold">Produto não encontrado.</p>
+        <button onClick={() => router.push('/produtos')} className="px-6 py-3 bg-slate-900 text-white rounded-full font-black text-sm">
           Explorar Produtos
         </button>
       </div>
     );
   }
 
-  if (isBuyNow && !buyNowItem) {
+  if (!isBuyNow && items.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center pb-24">
-        <p className="text-slate-500 font-semibold">Produto não encontrado.</p>
-        <button
-          onClick={() => router.push('/produtos')}
-          className="px-6 py-3 bg-slate-900 text-white rounded-full font-black text-sm"
-        >
+        <p className="text-slate-500 font-semibold">Não há itens no carrinho.</p>
+        <button onClick={() => router.push('/produtos')} className="px-6 py-3 bg-slate-900 text-white rounded-full font-black text-sm">
           Explorar Produtos
         </button>
       </div>
@@ -109,8 +114,10 @@ const CheckoutInner = () => {
     updateUserInfo({ name: name.trim(), phone: phone.trim(), location: address.trim() });
 
     if (isBuyNow) {
+      // Comprar Agora — limpar sessionStorage, não tocar no carrinho
       sessionStorage.removeItem('shopyump_buynow');
     } else {
+      // Carrinho — remover apenas os itens desta loja
       const indexes = cart
         .map((item, i) => (item.storeSlug === storeSlug ? i : -1))
         .filter((i) => i !== -1)
@@ -155,6 +162,7 @@ const CheckoutInner = () => {
         <h1 className="text-[18px] font-black text-slate-900">Finalizar Pedido</h1>
       </div>
 
+      {/* Loja */}
       <button
         onClick={() => router.push(`/loja/${storeSlug}`)}
         className="w-full flex items-center gap-3 p-4 bg-white rounded-3xl border border-slate-100 shadow-sm hover:bg-slate-50 transition-colors text-left"
@@ -180,6 +188,7 @@ const CheckoutInner = () => {
         <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
       </button>
 
+      {/* Resumo do pedido */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="px-4 pt-4 pb-2">
           <p className="text-[12px] font-black uppercase tracking-wider text-slate-400 mb-3">
@@ -215,11 +224,9 @@ const CheckoutInner = () => {
         </div>
       </div>
 
+      {/* Banner WhatsApp */}
       <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: '#25D366' }}
-        >
+        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: '#25D366' }}>
           <MessageSquare className="w-4 h-4 text-white fill-white" />
         </div>
         <div>
@@ -230,6 +237,7 @@ const CheckoutInner = () => {
         </div>
       </div>
 
+      {/* Formulário */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="px-4 pt-4 pb-2">
           <p className="text-[12px] font-black uppercase tracking-wider text-slate-400">Os seus dados</p>
@@ -311,6 +319,7 @@ const CheckoutInner = () => {
         </p>
       </div>
 
+      {/* Botão fixo */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
         <button
           onClick={handleSend}
@@ -325,7 +334,6 @@ const CheckoutInner = () => {
   );
 };
 
-// Wrapper com Suspense — obrigatório para useSearchParams no Next.js 15
 export const CheckoutClient = () => (
   <Suspense>
     <CheckoutInner />
