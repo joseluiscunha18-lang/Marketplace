@@ -88,7 +88,7 @@ export const BottomNav = () => {
                       ? 'w-11 h-11 text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
                       : isActive
                       ? 'w-9 h-9 text-[#171717]'
-                      : 'w-9 h-9 text-[#a89b8c]'
+                      : 'w-9 h-9 text-[#b3aa9d]'
                   }`}
                   style={cartColored ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' } : {}}
                 >
@@ -97,6 +97,18 @@ export const BottomNav = () => {
                     strokeWidth={cartColored ? 2.2 : 1.8}
                     fill="currentColor"
                   />
+                  {/* Furo branco do ícone de etiqueta (Promoções) */}
+                  {item.label === 'Promoções' && (
+                    <span
+                      className="absolute rounded-full bg-white pointer-events-none"
+                      style={{
+                        width: 3,
+                        height: 3,
+                        top: '34%',
+                        left: '37%',
+                      }}
+                    />
+                  )}
                   {/* Cart badge */}
                   {item.isCart && totalItems > 0 && (
                     <span
@@ -116,7 +128,7 @@ export const BottomNav = () => {
                 {/* Label */}
                 <span
                   className={`relative z-10 text-[10px] tracking-tight transition-colors duration-200 leading-none ${
-                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#a89b8c]'
+                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#b3aa9d]'
                   }`}
                 >
                   {item.label}
