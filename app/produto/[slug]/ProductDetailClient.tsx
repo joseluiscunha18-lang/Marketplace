@@ -350,7 +350,7 @@ export const ProductDetailClient = ({
                </div>
              </div>
 
-             <div className="space-y-3 pt-5 border-t border-slate-100">
+             <div className="space-y-3 pt-5">
                <div className="flex flex-col gap-2 items-start">
                  <span className="text-sm font-semibold text-gray-900">
                    Quantidade
@@ -361,7 +361,7 @@ export const ProductDetailClient = ({
                      className="p-1 transition-colors hover:text-gray-600 active:scale-95"
                      aria-label="Diminuir quantidade"
                    >
-                     <Minus className="w-5 h-5" />
+                     <Minus className="w-[18px] h-[18px]" />
                    </button>
                    <span className="text-base font-semibold min-w-[1.5rem] text-center text-slate-900">{quantity}</span>
                    <button
@@ -369,7 +369,7 @@ export const ProductDetailClient = ({
                      className="p-1 transition-colors hover:text-gray-600 active:scale-95"
                      aria-label="Aumentar quantidade"
                    >
-                     <Plus className="w-5 h-5" />
+                     <Plus className="w-[18px] h-[18px]" />
                    </button>
                  </div>
                </div>
