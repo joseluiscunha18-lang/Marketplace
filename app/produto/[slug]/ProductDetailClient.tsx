@@ -41,9 +41,9 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
          <p className="font-black text-[15px] text-slate-900 leading-tight truncate">{product.storeName}</p>
          {product.rating && reviewCount && (
            <div className="flex items-center gap-1 mt-0.5">
-             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+             <Star className="w-3 h-3 fill-slate-800 text-slate-800" />
              <span className="text-[12px] font-bold text-slate-700">{product.rating.toFixed(1).replace('.', ',')}</span>
-             <span className="text-[12px] text-slate-400 font-medium">({reviewCount})</span>
+             <span className="text-[12px] text-slate-600 font-medium">({reviewCount})</span>
            </div>
          )}
        </div>
@@ -193,7 +193,7 @@ export const ProductDetailClient = ({
 
          {/* ── Gallery column ───────────────────────────────────── */}
          <div className="lg:col-span-7 space-y-0">
-           <div className="lg:hidden">
+           <div className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md">
              <StoreTopBar product={product} store={store} />
            </div>
 
