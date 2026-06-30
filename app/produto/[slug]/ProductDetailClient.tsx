@@ -350,29 +350,29 @@ export const ProductDetailClient = ({
                </div>
              </div>
 
-             <div className="space-y-3 pt-5 border-t border-slate-100">
-               <div className="space-y-2">
-                 <span className="text-sm font-bold text-slate-900">
-                   Quantidade
-                 </span>
-                 <div className="inline-flex items-center gap-1 bg-slate-100 rounded-full p-1">
-                   <button
-                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                     className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
-                     aria-label="Diminuir quantidade"
-                   >
-                     <Minus className="w-4 h-4" />
-                   </button>
-                   <span className="text-[15px] font-black w-10 text-center text-slate-900">{quantity}</span>
-                   <button
-                     onClick={() => setQuantity((q) => q + 1)}
-                     className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
-                     aria-label="Aumentar quantidade"
-                   >
-                     <Plus className="w-4 h-4" />
-                   </button>
-                 </div>
+                          <div className="space-y-2 pt-5 border-t border-slate-100">
+               <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">
+                 Quantidade
+               </span>
+               <div className="inline-flex items-center gap-1 bg-slate-100 rounded-full p-1">
+                 <button
+                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                   className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
+                   aria-label="Diminuir quantidade"
+                 >
+                   <Minus className="w-4 h-4" />
+                 </button>
+                 <span className="text-[15px] font-black w-10 text-center text-slate-900">{quantity}</span>
+                 <button
+                   onClick={() => setQuantity((q) => q + 1)}
+                   className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
+                   aria-label="Aumentar quantidade"
+                 >
+                   <Plus className="w-4 h-4" />
+                 </button>
                </div>
+             </div>
+
 
                <button
                  onClick={() => {
@@ -965,5 +965,4 @@ function RelatedSection({
        ))}
      </div>
    </section>
- );
-}
+ )
