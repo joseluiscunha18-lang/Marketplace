@@ -76,7 +76,7 @@ export const BottomNav = () => {
             );
             const Icon = item.icon;
 
-            const cartColored = item.isCart && (isActive || cartAnimating || totalItems > 0);
+            const cartColored = item.isCart && (cartAnimating || totalItems > 0);
 
             const inner = (
               <>
@@ -85,15 +85,15 @@ export const BottomNav = () => {
                   data-cart-icon={item.isCart ? 'true' : undefined}
                   className={`relative z-10 flex items-center justify-center rounded-full transition-all duration-200 ${
                     cartColored
-                      ? 'w-14 h-14 text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
+                      ? 'w-11 h-11 text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
                       : isActive
-                      ? 'w-8 h-8 text-[#171717]'
-                      : 'w-8 h-8 text-[#8a6d4f]'
+                      ? 'w-9 h-9 text-[#171717]'
+                      : 'w-9 h-9 text-[#8a6d4f]'
                   }`}
                   style={cartColored ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' } : {}}
                 >
                   <Icon
-                    className={`transition-all duration-200 ${cartColored ? 'w-6 h-6' : 'w-5 h-5'}`}
+                    className={`transition-all duration-200 ${cartColored ? 'w-[22px] h-[22px]' : 'w-[22px] h-[22px]'}`}
                     strokeWidth={cartColored ? 2.2 : 1.8}
                     fill="currentColor"
                   />
