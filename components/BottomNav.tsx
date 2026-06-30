@@ -79,41 +79,31 @@ export const BottomNav = () => {
             );
             const Icon = item.icon;
 
+            const isColored = isActive || (item.isCart && (cartAnimating || totalItems > 0));
+
             const inner = (
               <>
-                {/* Active pill background */}
-                {isActive && (
-                  <span className="absolute inset-0 rounded-2xl" style={{ background: 'rgba(99,102,241,0.08)' }} />
-                )}
-
                 {/* Icon container */}
                 <span
                   data-cart-icon={item.isCart ? 'true' : undefined}
-                  className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
-                    isActive
-                      ? 'text-white shadow-md'
-                      : item.isCart && (cartAnimating || totalItems > 0)
-                      ? 'text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
-                      : 'text-slate-400'
+                  className={`relative z-10 flex items-center justify-center rounded-full transition-all duration-200 ${
+                    isColored
+                      ? 'w-9 h-9 text-white shadow-sm' + (item.isCart && cartAnimating ? ' scale-110' : '')
+                      : 'w-8 h-8 text-[#8a6d4f]'
                   }`}
-                  style={
-                    isActive
-                      ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }
-                      : item.isCart && (cartAnimating || totalItems > 0)
-                      ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' }
-                      : {}
-                  }
+                  style={isColored ? { background: '#171717', transition: 'all 0.3s ease' } : {}}
                 >
                   <Icon
-                    className={`transition-all duration-200 ${isActive ? 'w-4 h-4' : 'w-5 h-5'}`}
-                    strokeWidth={isActive ? 2.5 : 1.8}
+                    className={`transition-all duration-200 ${isColored ? 'w-[18px] h-[18px]' : 'w-5 h-5'}`}
+                    strokeWidth={isColored ? 2.2 : 1.8}
                   />
                   {/* Cart badge */}
                   {item.isCart && totalItems > 0 && (
                     <span
                       className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full text-white font-black text-[9px] flex items-center justify-center px-1 z-20"
                       style={{
-                        background: 'linear-gradient(135deg,#ec4899,#f43f5e)',
+                        background: '#171717',
+                        border: '1.5px solid #fff',
                         transform: cartAnimating ? 'scale(1.3)' : 'scale(1)',
                         transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                       }}
@@ -125,8 +115,8 @@ export const BottomNav = () => {
 
                 {/* Label */}
                 <span
-                  className={`relative z-10 text-[10px] font-semibold tracking-tight transition-colors duration-200 leading-none ${
-                    isActive ? 'text-indigo-600' : 'text-slate-400'
+                  className={`relative z-10 text-[10px] tracking-tight transition-colors duration-200 leading-none ${
+                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#8a6d4f]'
                   }`}
                 >
                   {item.label}
