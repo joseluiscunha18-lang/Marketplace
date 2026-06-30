@@ -88,7 +88,7 @@ export const BottomNav = () => {
                       ? 'w-11 h-11 text-white shadow-lg' + (cartAnimating ? ' scale-110' : '')
                       : isActive
                       ? 'w-9 h-9 text-[#171717]'
-                      : 'w-9 h-9 text-[#b3aa9d]'
+                      : 'w-9 h-9 text-[#9a948a]'
                   }`}
                   style={cartColored ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', transition: 'all 0.3s ease' } : {}}
                 >
@@ -128,7 +128,7 @@ export const BottomNav = () => {
                 {/* Label */}
                 <span
                   className={`relative z-10 text-[10px] tracking-tight transition-colors duration-200 leading-none ${
-                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#b3aa9d]'
+                    isActive ? 'font-bold text-[#171717]' : 'font-semibold text-[#9a948a]'
                   }`}
                 >
                   {item.label}
