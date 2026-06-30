@@ -103,11 +103,11 @@ export const CartDrawer = () => {
                 </div>
               </div>
               <Link
-                href="/checkout"
+                href="/carrinho"
                 onClick={() => setIsCartOpen(false)}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-black text-sm uppercase tracking-wide shadow-xl flex items-center justify-center gap-2"
               >
-                Continuar no WhatsApp <ArrowRight className="w-4 h-4" />
+                Ver Carrinho e Finalizar <ArrowRight className="w-4 h-4" />
               </Link>
               <p className="text-[11px] text-center text-slate-400">⚡ Pedido enviado directamente para o WhatsApp do vendedor.</p>
             </div>
