@@ -4,8 +4,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 
 const RISE_MS = 280;
-const HOLD_MS = 1000; // pause at peak before falling so the user can actually see the image
-const APPROACH_MS = 360; // travel from the peak down to a thumbnail spot near the cart
+const HOLD_MS = 600; // pause at peak before falling so the user can actually see the image
+const APPROACH_MS = 260; // travel from the peak down to a thumbnail spot near the cart
 const NEAR_HOLD_MS = 220; // brief pause as a thumbnail right next to the cart icon
 const ENTER_MS = 260; // final shrink into the cart icon
 
