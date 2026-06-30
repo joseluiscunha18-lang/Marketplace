@@ -350,26 +350,26 @@ export const ProductDetailClient = ({
                </div>
              </div>
 
-             <div className="space-y-3 pt-5">
-               <div className="flex flex-col gap-2 items-start">
-                 <span className="text-sm font-semibold text-gray-900">
+             <div className="space-y-3 pt-3">
+               <div className="flex flex-col gap-1.5 items-start">
+                 <span className="text-[13px] font-semibold text-gray-900">
                    Quantidade
                  </span>
-                 <div className="flex items-center justify-between w-28 px-3 py-2 bg-white border border-gray-200 rounded-full">
+                 <div className="flex items-center justify-between w-24 px-2 py-1.5 bg-white border border-gray-200 rounded-full">
                    <button
                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                      className="p-1 transition-colors hover:text-gray-600 active:scale-95"
                      aria-label="Diminuir quantidade"
                    >
-                     <Minus className="w-[18px] h-[18px]" />
+                     <Minus className="w-4 h-4" />
                    </button>
-                   <span className="text-base font-semibold min-w-[1.5rem] text-center text-slate-900">{quantity}</span>
+                   <span className="text-sm font-semibold min-w-[1.5rem] text-center text-slate-900">{quantity}</span>
                    <button
                      onClick={() => setQuantity((q) => q + 1)}
                      className="p-1 transition-colors hover:text-gray-600 active:scale-95"
                      aria-label="Aumentar quantidade"
                    >
-                     <Plus className="w-[18px] h-[18px]" />
+                     <Plus className="w-4 h-4" />
                    </button>
                  </div>
                </div>
