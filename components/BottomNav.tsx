@@ -62,11 +62,11 @@ export const BottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-3 pb-3"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div
-        className="backdrop-blur-xl px-3 pt-2 pb-3 rounded-3xl shadow-2xl"
+        className="backdrop-blur-xl px-3 pt-2 pb-3 rounded-t-3xl shadow-2xl"
         style={{ background: 'rgba(255,255,255,0.97)' }}
       >
         <div className="flex items-center justify-around max-w-sm mx-auto">
