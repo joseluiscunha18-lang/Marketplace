@@ -130,10 +130,7 @@ export const ProductDetailClient = ({
    setAddStatus('loading');
    
    setTimeout(() => {
-     const activeImage = allImages[activeIndex] || product.image;
-     const productToCart = { ...product, image: activeImage };
-
-     addToCart(productToCart, selectedSize || undefined, selectedColor || undefined, rect, quantity);
+     addToCart(product, selectedSize || undefined, selectedColor || undefined, rect, quantity);
      
      setAddStatus('success');
      setTimeout(() => {
