@@ -9,7 +9,7 @@ import {
  Check, Share2, Heart, ChevronLeft, ChevronRight,
  MoreHorizontal, Star, Truck, RefreshCcw, Lock,
  BadgeCheck, ThumbsUp, ChevronDown, X, SlidersHorizontal,
- MessageSquareDashed, Flag, Search
+ MessageSquareDashed, Flag, Search, Minus, Plus
 } from 'lucide-react';
 import type { Product, Store, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
@@ -79,6 +79,7 @@ export const ProductDetailClient = ({
  const [activeIndex, setActiveIndex] = useState(0);
  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] ?? '');
  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name ?? '');
+ const [quantity, setQuantity] = useState(1);
  const [copied, setCopied] = useState(false);
  const scrollRef = useRef<HTMLDivElement | null>(null);
  const isProgrammaticScroll = useRef(false);
@@ -125,7 +126,7 @@ export const ProductDetailClient = ({
    // Salva apenas este produto no sessionStorage — não toca no carrinho
    const buyNowItem = {
      ...product,
-     quantity: 1,
+     quantity,
      selectedSize: selectedSize || undefined,
      selectedColor: selectedColor || undefined,
    };
@@ -350,10 +351,33 @@ export const ProductDetailClient = ({
              </div>
 
              <div className="space-y-3 pt-5 border-t border-slate-100">
+               <div className="space-y-2">
+                 <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+                   Quantidade
+                 </span>
+                 <div className="inline-flex items-center gap-1 bg-slate-100 rounded-full p-1">
+                   <button
+                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                     className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
+                     aria-label="Diminuir quantidade"
+                   >
+                     <Minus className="w-4 h-4" />
+                   </button>
+                   <span className="text-[15px] font-black w-10 text-center text-slate-900">{quantity}</span>
+                   <button
+                     onClick={() => setQuantity((q) => q + 1)}
+                     className="w-10 h-10 rounded-full flex items-center justify-center text-slate-700 hover:bg-white transition-colors active:scale-90"
+                     aria-label="Aumentar quantidade"
+                   >
+                     <Plus className="w-4 h-4" />
+                   </button>
+                 </div>
+               </div>
+
                <button
                  onClick={() => {
                    const rect = imageContainerRef.current?.getBoundingClientRect();
-                   addToCart(product, selectedSize || undefined, selectedColor || undefined, rect);
+                   addToCart(product, selectedSize || undefined, selectedColor || undefined, rect, quantity);
                  }}
                  className="w-full py-4 bg-white border-2 border-slate-900 hover:bg-slate-50 text-slate-900 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center active:scale-[0.98] transition-all"
                >
