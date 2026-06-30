@@ -26,7 +26,7 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
    : null;
 
  return (
-   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
+   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white/90 backdrop-blur-md">
      <Link href={`/loja/${product.storeSlug}`} className="flex items-center gap-3 min-w-0">
        <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-900 shrink-0 shadow-sm">
          {store?.logo ? (
@@ -41,7 +41,7 @@ function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
          <p className="font-black text-[15px] text-slate-900 leading-tight truncate">{product.storeName}</p>
          {product.rating && reviewCount && (
            <div className="flex items-center gap-1 mt-0.5">
-             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+             <Star className="w-3 h-3 fill-slate-800 text-slate-800" />
              <span className="text-[12px] font-bold text-slate-700">{product.rating.toFixed(1).replace('.', ',')}</span>
              <span className="text-[12px] text-slate-400 font-medium">({reviewCount})</span>
            </div>
@@ -87,14 +87,6 @@ export const ProductDetailClient = ({
  const [reviewsOpen, setReviewsOpen] = useState(false);
  const [reviewsOpenId, setReviewsOpenId] = useState<string | null>(null);
  const isFav = isFavorite(product.id);
-
- useEffect(() => {
-   const header = document.querySelector('header');
-   if (header) header.style.display = 'none';
-   return () => {
-     if (header) header.style.display = '';
-   };
- }, []);
 
  useEffect(() => {
    const bottomNav = document.querySelector('nav[class*="fixed bottom-0"]') as HTMLElement | null;
@@ -168,7 +160,7 @@ export const ProductDetailClient = ({
 
          {/* ── Gallery column ───────────────────────────────────── */}
          <div className="lg:col-span-7 space-y-0">
-           <div className="lg:hidden">
+           <div className="lg:hidden sticky top-0 z-40">
              <StoreTopBar product={product} store={store} />
            </div>
 
@@ -412,12 +404,12 @@ export const ProductDetailClient = ({
                </div>
              </div>
 
-             <div className="space-y-2 pt-5 border-t border-slate-100">
+             <div className="space-y-2 pt-5">
                <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Descrição</span>
                <p className="text-[14px] text-slate-600 leading-relaxed font-medium">{product.description}</p>
              </div>
 
-             <div className="pt-5 border-t border-slate-100">
+             <div className="pt-5">
                <ReviewsSection product={product} onOpenDrawer={() => setReviewsOpen(true)} onOpenDrawerAtReview={(id) => { setReviewsOpenId(id); setReviewsOpen(true); }} />
              </div>
            </div>
