@@ -4,10 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 
 const RISE_MS = 280;
-const FALL_MS = 650;
 const HOLD_MS = 1000; // pause at peak before falling so the user can actually see the image
+const APPROACH_MS = 500; // travel from the peak down to a thumbnail spot near the cart
+const NEAR_HOLD_MS = 220; // brief pause as a thumbnail right next to the cart icon
+const ENTER_MS = 260; // final shrink into the cart icon
 
-type Phase = 'idle' | 'start' | 'rise' | 'fall';
+type Phase = 'idle' | 'start' | 'rise' | 'approach' | 'enter';
 
 const getCartIconCenter = (): { x: number; y: number } | null => {
   const cartBtn = document.querySelector('[data-cart-icon]') as HTMLElement | null;
@@ -28,7 +30,8 @@ export const FlyingImageOverlay = () => {
   const originRef = useRef({ x: 0, y: 0, size: 0 });
   // Offsets (relative to origin) for each phase, computed fresh every run.
   const riseOffsetRef = useRef({ dx: 0, dy: 0 });
-  const fallOffsetRef = useRef({ dx: 0, dy: 0 });
+  const approachOffsetRef = useRef({ dx: 0, dy: 0, size: 0 });
+  const enterOffsetRef = useRef({ dx: 0, dy: 0 });
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -55,17 +58,33 @@ export const FlyingImageOverlay = () => {
 
     originRef.current = { x: originX, y: originY, size };
 
-    // Rise to a clear, comfortable spot — roughly upper-middle of the screen —
-    // instead of barely lifting off where it started (which read as "stuck at the top").
-    const riseTargetY = Math.min(originY, vh * 0.42 - size / 2);
+    // Rise to a clear, comfortable spot — lower-middle of the screen, around
+    // eye level — instead of stopping near the top where it read as "stuck".
+    const riseTargetY = Math.min(originY, vh * 0.6 - size / 2);
     riseOffsetRef.current = { dx: 0, dy: riseTargetY - originY };
 
-    // Fall straight to the cart icon. Re-measure right now (not at some earlier
-    // mount time) so layout shifts/scrolling since the click can't throw it off.
+    // Re-measure the cart icon right now (not at some earlier mount time) so
+    // layout shifts/scrolling since the click can't throw the landing off.
     const cartCenter = getCartIconCenter();
-    const fallTargetX = cartCenter ? cartCenter.x - size / 2 : vw - size - margin;
-    const fallTargetY = cartCenter ? cartCenter.y - size / 2 : vh - size - margin;
-    fallOffsetRef.current = { dx: fallTargetX - originX, dy: fallTargetY - originY };
+    const cartX = cartCenter ? cartCenter.x : vw - margin - 20;
+    const cartY = cartCenter ? cartCenter.y : vh - margin - 20;
+
+    // Step 1: approach — travel down next to the cart and shrink to a small
+    // thumbnail (not yet on top of the icon), so it visibly "arrives" there.
+    const approachSize = Math.max(size * 0.32, 36);
+    const approachTargetX = cartX - approachSize / 2 - 8;
+    const approachTargetY = cartY - approachSize / 2 - 8;
+    approachOffsetRef.current = {
+      dx: approachTargetX - originX,
+      dy: approachTargetY - originY,
+      size: approachSize,
+    };
+
+    // Step 2: enter — from that thumbnail spot, shrink the rest of the way
+    // into the cart icon itself and fade out.
+    const enterTargetX = cartX - size / 2;
+    const enterTargetY = cartY - size / 2;
+    enterOffsetRef.current = { dx: enterTargetX - originX, dy: enterTargetY - originY };
 
     clearTimers();
 
@@ -78,9 +97,15 @@ export const FlyingImageOverlay = () => {
       requestAnimationFrame(() => setPhase('rise'));
     });
 
-    timers.current.push(setTimeout(() => setPhase('fall'), RISE_MS + HOLD_MS));
+    timers.current.push(setTimeout(() => setPhase('approach'), RISE_MS + HOLD_MS));
     timers.current.push(
-      setTimeout(() => clearFlyingImage(), RISE_MS + HOLD_MS + FALL_MS)
+      setTimeout(() => setPhase('enter'), RISE_MS + HOLD_MS + APPROACH_MS + NEAR_HOLD_MS)
+    );
+    timers.current.push(
+      setTimeout(
+        () => clearFlyingImage(),
+        RISE_MS + HOLD_MS + APPROACH_MS + NEAR_HOLD_MS + ENTER_MS
+      )
     );
 
     return clearTimers;
@@ -104,12 +129,18 @@ export const FlyingImageOverlay = () => {
     scale = 1.08;
     opacity = 1;
     transition = `transform ${RISE_MS}ms cubic-bezier(0.22,1,0.36,1), opacity ${RISE_MS}ms ease`;
-  } else if (phase === 'fall') {
-    dx = fallOffsetRef.current.dx;
-    dy = fallOffsetRef.current.dy;
-    scale = 0.2;
+  } else if (phase === 'approach') {
+    dx = approachOffsetRef.current.dx;
+    dy = approachOffsetRef.current.dy;
+    scale = approachOffsetRef.current.size / size;
+    opacity = 1;
+    transition = `transform ${APPROACH_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${APPROACH_MS}ms ease`;
+  } else if (phase === 'enter') {
+    dx = enterOffsetRef.current.dx;
+    dy = enterOffsetRef.current.dy;
+    scale = 0.15;
     opacity = 0;
-    transition = `transform ${FALL_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${FALL_MS - 150}ms ease ${150}ms`;
+    transition = `transform ${ENTER_MS}ms cubic-bezier(0.4,0,0.2,1), opacity ${ENTER_MS}ms ease ${ENTER_MS * 0.4}ms`;
   }
 
   return (
@@ -129,11 +160,12 @@ export const FlyingImageOverlay = () => {
           backgroundPosition: 'center',
           opacity,
           transform: `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`,
+          transformOrigin: 'center',
           transition,
           willChange: 'transform, opacity',
         }}
       />
-      {phase === 'fall' && (
+      {phase === 'enter' && (
         <div
           style={{
             position: 'absolute',
@@ -146,7 +178,7 @@ export const FlyingImageOverlay = () => {
             borderRadius: '50%',
             border: '2px solid #7c3aed',
             opacity: 0,
-            animation: `cartPulse ${FALL_MS}ms ease-out ${FALL_MS - 200}ms forwards`,
+            animation: `cartPulse ${ENTER_MS}ms ease-out forwards`,
           }}
         />
       )}
