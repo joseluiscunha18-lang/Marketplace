@@ -16,6 +16,7 @@ import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { getSizeLabel } from '@/lib/productHelpers';
 import { ProductCard } from '@/components/ProductCard';
+import { DescriptionDrawer } from '@/components/DescriptionDrawer';
 
 /* ─── Store top-bar ──────────────────────────── */
 function StoreTopBar({ product, store }: { product: Product; store?: Store }) {
@@ -88,6 +89,7 @@ export const ProductDetailClient = ({
 
  const [reviewsOpen, setReviewsOpen] = useState(false);
  const [reviewsOpenId, setReviewsOpenId] = useState<string | null>(null);
+ const [descriptionOpen, setDescriptionOpen] = useState(false);
  const isFav = isFavorite(product.id);
 
  useEffect(() => {
@@ -187,6 +189,12 @@ export const ProductDetailClient = ({
  return (
    <div className="pb-24 bg-white">
      <ReviewsDrawer product={product} open={reviewsOpen} onClose={() => { setReviewsOpen(false); setReviewsOpenId(null); }} initialReviewId={reviewsOpenId} />
+     <DescriptionDrawer
+       isOpen={descriptionOpen}
+       onClose={() => setDescriptionOpen(false)}
+       title={product.name}
+       description={product.description}
+     />
 
      <div className="max-w-7xl mx-auto">
        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-10 lg:px-4 sm:px-6 lg:py-8">
@@ -450,9 +458,20 @@ export const ProductDetailClient = ({
                </div>
              </div>
 
-             <div className="space-y-2 pt-5">
+             <div className="space-y-3 pt-5">
                <span className="text-xs font-black uppercase tracking-wider text-slate-800 block">Descrição</span>
-               <p className="text-[14px] text-slate-600 leading-relaxed font-medium">{product.description}</p>
+               <p className="text-[14px] text-slate-700 leading-6 font-medium line-clamp-3">
+                 {product.description}
+               </p>
+               <button
+                 onClick={() => setDescriptionOpen(true)}
+                 className="inline-flex items-center gap-2 text-[13px] font-bold text-[#6344F5] hover:text-[#5333e6] transition-colors active:scale-95"
+               >
+                 Ver descrição completa
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                 </svg>
+               </button>
              </div>
 
              <div className="pt-5">
